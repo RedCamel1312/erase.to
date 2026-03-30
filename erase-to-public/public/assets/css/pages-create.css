@@ -1,0 +1,201 @@
+/* 
+  pages-create.css
+  Die Workspace-Ansicht. 
+  Soll sich groß, klar und architektonisch anfühlen, nicht wie ein fettes Dashboard.
+*/
+
+/* Die Arbeitsfläche nimmt sich fast den kompletten Screen, damit das Textfeld triumphiert */
+.workspace {
+  max-width: 1000px; /* Textfeld wird jetzt massiv zum dominierenden Element auf dem Screen */
+  margin: 0 auto;
+}
+
+.workspace-header {
+  margin-bottom: var(--space-xl);
+}
+
+.workspace-title {
+  color: var(--color-text-base);
+  font-size: 2.6rem; /* Kräftigerer Lead */
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.workspace-intro {
+  color: var(--color-text-base);
+  opacity: 0.85; /* Bewusster, nicht flüsternd */
+  font-size: 1.15rem;
+  line-height: var(--line-height-base);
+}
+
+/* Hierarchie im Einstellungsbereich */
+.settings-area label {
+  font-weight: 600 !important; /* Minimal kräftiger */
+  color: var(--color-text-base);
+}
+.settings-area .text-muted {
+  opacity: 0.65; /* Sekundäre Hilfetexte treten sanft in den Hintergrund */
+}
+
+/* Das Textarea ist das Herzstück */
+.form-textarea {
+  width: 100%;
+  min-height: 480px; /* Sehr großzügiger Raum für tiefen Fokus */
+  resize: vertical;
+  
+  background-color: #FFFFFF; 
+  box-shadow: 0 2px 14px rgba(0,0,0,0.02);
+  
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0; /* Radikal eckig passend zum Tool-Charakter */
+  
+  /* Extrem viel innere Ruhe durch massive Abstände */
+  padding: var(--space-xl) var(--space-lg);
+  
+  font-family: inherit;
+  font-size: 1.15rem; /* Souveräner Lese-/Schreibfluss */
+  line-height: 1.8; /* Weite Zeilenhöhe (Atmen) */
+  color: var(--color-text-base);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Fallback für Dark Mode - Eigene Materialebene für Inputs */
+html.theme-dark .form-textarea {
+  background-color: #2F2D2B; /* Minimal heller als Surface für visuelle Tiefenschichtung */
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  border-color: rgba(255, 255, 255, 0.08); /* Minimal stärkere Definition des Rands */
+}
+
+/* Subtile Fokussierung, keine harten Leuchtfarben */
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(82, 106, 122, 0.1); 
+}
+
+.form-textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+/* Oberfläche für Settings */
+.settings-area {
+  padding: var(--space-md) var(--space-lg);
+}
+
+.font-medium {
+  font-weight: var(--font-weight-medium);
+}
+
+.form-select {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-2xs);
+  padding: 0.65rem 0.5rem;
+  font-family: inherit;
+  font-size: var(--text-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-base);
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.form-checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--color-accent); 
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Optionales Passwort Feld Text-Input */
+.form-input {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.5rem;
+  font-family: inherit;
+  font-size: var(--text-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-base);
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+/* Validierungs-Zustände für das Nachrichtenfeld */
+.form-textarea.is-invalid {
+  border-color: #b75555 !important;
+  box-shadow: inset 0 0 0 1px #b75555 !important; /* Zarte Markierung nach innen */
+}
+
+/* Wenn nah am Limit, wird der Rand subtil wärmer/warnend, aber nicht laut */
+.form-textarea.is-near-limit {
+  border-color: #c98e54 !important;
+}
+
+#char-counter.is-near-limit {
+  color: #c98e54 !important;
+  opacity: 0.8 !important;
+}
+
+#char-counter.is-maxed {
+  color: #b75555 !important;
+  opacity: 0.9 !important;
+}
+
+/* 
+  Stille zweite Schutzebene
+  Bleibt unaufdringlich, bis man sie wirklich nutzt.
+*/
+.passphrase-input {
+  border-radius: 0;
+  background: transparent;
+  border-width: 0 0 1px 0;
+  border-color: var(--color-border-subtle);
+  padding: 0.4rem 0;
+  font-size: 1.1em;
+  color: var(--color-text-base);
+  opacity: 0.6; /* Sehr zurückhaltend im leeren Zustand */
+  transition: opacity 0.2s ease, border-color 0.2s ease, font-weight 0.2s ease;
+}
+
+.passphrase-input:focus {
+  opacity: 1;
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* Verhalten bei Eingabe: Optisches Gewicht steigt subtil an */
+.passphrase-input:not(:placeholder-shown) {
+  opacity: 1;
+  border-color: var(--color-text-base); /* Keine Account-Farben, nur solides Architektur-Schwarz/Weiß */
+  font-weight: 500;
+  letter-spacing: 0.1em; /* Macht Passwort-Punkte souveräner */
+}

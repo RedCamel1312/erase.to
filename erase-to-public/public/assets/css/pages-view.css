@@ -1,0 +1,78 @@
+/* 
+  pages-view.css
+  Die Leser-Ansicht. 
+  Soll sich nicht wie ein Chat, sondern wie ein sicheres Dokument oder eine Archiv-Karte anfühlen.
+*/
+
+.workspace {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.workspace-header {
+  margin-bottom: var(--space-xl);
+}
+
+.workspace-title {
+  color: var(--color-text-base);
+  font-size: 2.6rem; /* Kräftigerer Lead */
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.workspace-intro {
+  color: var(--color-text-base);
+  opacity: 0.85; /* Bewusster, nicht flüsternd */
+  font-size: 1.15rem;
+  line-height: var(--line-height-base);
+}
+
+/* Die Nachrichtendarstellung */
+.message-card {
+  padding: var(--space-xl) var(--space-lg);
+  
+  /* Im Light Mode: Weißeres Overlay mit hauchzartem Papierschatten */
+  background-color: #FFFFFF; 
+  border: 1px solid var(--color-border-subtle); 
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.03); 
+}
+
+/* Im Light-Theme ohne reines Weiß (Elfenbein default) nutzen wir hier reines Weiß als "Papier" */
+
+/* Fallback für Dark Mode (härteres Surface mit sanftem Schatten) */
+html.theme-dark .message-card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15); 
+}
+
+.message-text {
+  font-size: 1.15rem; /* Exaktes Spiegelbild der Schreib-Workstation */
+  line-height: 1.8; /* Weite Zeilenhöhe (Atmen) */
+  color: var(--color-text-base);
+  font-family: var(--font-family-base);
+  
+  /* Essentiell für Plaintext-Leseoptik */
+  white-space: pre-wrap;     
+  word-wrap: break-word;     
+}
+
+/* Wiederverwendetes form-input (kann in Zukunft nach components wandern) */
+.form-input {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.5rem;
+  font-family: inherit;
+  font-size: var(--text-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-base);
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
