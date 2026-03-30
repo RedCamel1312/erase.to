@@ -1,0 +1,65 @@
+/* 
+  layout.css
+  Grobgerüst, Container und Sektionsaufbau
+
+  Regel: Die Seite soll nicht "zusammengebaut" aussehen, sondern "gesetzt".
+  Viel Luft, Verzicht auf dauernde Linien, lieber Leerstellen als Trenner nutzen.
+*/
+
+/* 
+  Haupt-Wrapper für alles. 
+  Gibt die maximale Breite vor und zentriert den Content sauber auf einer Achse.
+*/
+.container {
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+  width: 100%;
+}
+
+/* 
+  Der Header teilt sich die exakt gleiche Container-Breite, 
+  damit Logo und Content eine bündige vertikale Linie bilden.
+*/
+.site-header {
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Haupt-Inhaltsbereich mit großzügigem Abstand nach oben und unten */
+.site-main {
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-xl);
+}
+
+/* Footer-Bereich analog zum Header (einziger Bereich mit sanfter Linie) */
+.site-footer {
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-lg);
+  margin-top: var(--space-2xl); /* Massive Distanz zum Content, trennt das System stark ab */
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* 
+  Karten und Boxen. 
+  Werden über Innenabstände (Padding) definiert statt über harte Rahmen.
+*/
+.surface-box {
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--pad-box);
+  /* Wir verzichten auf einen starken Border und setzen auf die Flächenwirkung. */
+}
+
+/* 
+  Vertikaler Rhythmus (Stack)
+  Utility-Klassen für Formularfelder oder Textblöcke, um Abstände flüssig und kontrolliert zu halten.
+*/
+.stack-xs > * + * { margin-top: var(--space-xs); }
+.stack-sm > * + * { margin-top: var(--space-sm); }
+.stack-md > * + * { margin-top: var(--space-md); }
+.stack-lg > * + * { margin-top: var(--space-lg); }
