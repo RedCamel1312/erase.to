@@ -42,7 +42,7 @@
 </script>
 
 <svelte:head
-  ><title>Open a message — erase.to</title><meta
+  ><title>Open a message | erase.to</title><meta
     name="robots"
     content="noindex,nofollow,noarchive,nosnippet"
   /></svelte:head

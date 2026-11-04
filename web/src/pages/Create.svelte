@@ -88,7 +88,7 @@
 </script>
 
 <svelte:head
-  ><title>erase.to — Encrypted sharing</title><meta
+  ><title>erase.to | Encrypted sharing</title><meta
     name="robots"
     content="noindex,nofollow,noarchive,nosnippet"
   /></svelte:head

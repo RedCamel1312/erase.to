@@ -20,7 +20,7 @@
   );
 </script>
 
-<svelte:head><title>{title} — erase.to</title></svelte:head>
+<svelte:head><title>{title} | erase.to</title></svelte:head>
 <main id="main" class="document-page" tabindex="-1">
   <header class="page-intro">
     <div>
