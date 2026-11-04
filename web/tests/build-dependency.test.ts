@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 type Merge = (
@@ -11,11 +12,40 @@ type Merge = (
 // Resolve from the actual consumer rather than testing an unrelated direct dependency.
 const pluginRequire = createRequire(import.meta.resolve('@sveltejs/vite-plugin-svelte'));
 const packageDirectory = dirname(pluginRequire.resolve('deepmerge/package.json'));
+const dependency = pluginRequire('deepmerge/package.json') as { name: string; version: string };
+const esm = await import(pathToFileURL(join(packageDirectory, 'dist/index.js')).href);
 const entrypoints: [string, Merge][] = [
-  ['Vite plugin CommonJS dependency', pluginRequire('deepmerge') as Merge],
-  ['published UMD entrypoint', pluginRequire(join(packageDirectory, 'dist/umd.js')) as Merge],
+  ['Vite plugin ESM dependency', esm.default as Merge],
+  ['published CommonJS entrypoint', pluginRequire('deepmerge') as Merge],
 ];
 const malicious = () => JSON.parse('{"__proto__":{"syntheticMarker":true}}') as unknown;
+
+it('resolves the published replacement from the actual Svelte plugin', () => {
+  expect(dependency.name).toBe('@stackline/deepmerge');
+  expect(dependency.version).toBe('1.1.0');
+});
+
+it('preserves the plugin configuration pipeline with the replacement installed', async () => {
+  const optionsUrl = new URL(
+    './utils/options.js',
+    import.meta.resolve('@sveltejs/vite-plugin-svelte'),
+  );
+  const { preResolveOptions } = await import(optionsUrl.href);
+  const preprocess = [{ script: () => undefined }];
+  const onwarn = () => undefined;
+  const include = /\.svelte$/;
+  const options = await preResolveOptions(
+    { configFile: false, compilerOptions: { dev: false }, preprocess, onwarn, include },
+    { root: process.cwd() },
+    { command: 'build', mode: 'production' },
+  );
+  expect(options.compilerOptions).toEqual({ dev: false });
+  expect(options.preprocess).toBe(preprocess);
+  expect(options.onwarn).toBe(onwarn);
+  expect(options.include).toBe(include);
+  expect(options.emitCss).toBe(true);
+  expect(options.isBuild).toBe(true);
+});
 
 describe.each(entrypoints)('%s prototype-poisoning regression', (_label, merge) => {
   it('does not give a null-prototype target an attacker-controlled prototype', () => {

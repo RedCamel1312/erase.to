@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it, vi } from 'vitest';
-import { ThemeController, type ThemeState } from '../src/lib/theme.ts';
+import { ThemeController, nextThemePreference, type ThemeState } from '../src/lib/theme.ts';
 
 const earlyScript = readFileSync(new URL('../public/theme.js', import.meta.url), 'utf8');
 
@@ -72,6 +72,32 @@ function themeHost(stored: string | null = null, dark = false) {
 }
 
 describe('system theme and explicit preferences', () => {
+  it('cycles System to Light to Dark and back to the live system preference', () => {
+    const host = themeHost(null, true);
+    const controller = host.start();
+    controller.cycle();
+    expect(host.changed).toHaveBeenLastCalledWith({ preference: 'light', resolved: 'light' });
+    expect(host.data.get('erase.theme')).toBe('light');
+    controller.cycle();
+    expect(host.changed).toHaveBeenLastCalledWith({ preference: 'dark', resolved: 'dark' });
+    expect(host.data.get('erase.theme')).toBe('dark');
+    controller.cycle();
+    expect(host.changed).toHaveBeenLastCalledWith({ preference: 'system', resolved: 'dark' });
+    expect(host.data.has('erase.theme')).toBe(false);
+    expect(host.root.dataset.theme).toBeUndefined();
+    host.system(false);
+    expect(host.changed).toHaveBeenLastCalledWith({ preference: 'system', resolved: 'light' });
+    controller.destroy();
+  });
+  it('uses the same next choice for the button action and a persisted starting preference', () => {
+    for (const stored of ['light', 'dark', 'system'] as const) {
+      const host = themeHost(stored);
+      const controller = host.start();
+      controller.cycle();
+      expect(host.changed.mock.lastCall?.[0].preference).toBe(nextThemePreference(stored));
+      controller.destroy();
+    }
+  });
   it('follows OS changes by default without storing a forced light or dark preference', () => {
     const host = themeHost(null, true);
     const controller = host.start();

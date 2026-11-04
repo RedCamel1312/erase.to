@@ -7,6 +7,10 @@ export function themePreference(value: unknown): ThemePreference {
   return value === 'light' || value === 'dark' ? value : 'system';
 }
 
+export function nextThemePreference(value: ThemePreference): ThemePreference {
+  return value === 'system' ? 'light' : value === 'light' ? 'dark' : 'system';
+}
+
 export class ThemeController {
   private preference: ThemePreference;
   private media: MediaQueryList | null = null;
@@ -85,6 +89,10 @@ export class ThemeController {
     } catch {
       // A blocked storage API must not prevent a choice for this page.
     }
+  }
+
+  cycle(): void {
+    this.set(nextThemePreference(this.preference));
   }
 
   destroy(): void {

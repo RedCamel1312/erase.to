@@ -10,10 +10,8 @@ Include the affected revision, relevant configuration, reproduction steps and ex
 
 The current main branch is maintained. Earlier PHP and Node.js implementations use different protocols and are not supported by this implementation. There is no independent audit certification. Read the [threat model](docs/threat-model.md) before relying on a property that is not covered by the documented design.
 
-## Known build dependency advisory
+## Dependency checks
 
-The Svelte Vite plugin brings in `deepmerge@4.3.1`, covered by [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4). This is a build/development dependency, not a live message-processing dependency. No corrected upstream release was available when this mitigation was added.
+CI audits the complete JavaScript dependency tree, including development and build tools, at the Low threshold. Rust dependencies are checked against RustSec. No advisory exclusions or ignored severity levels are configured.
 
-The repository applies [a pinned pnpm patch](patches/deepmerge@4.3.1.patch) that blocks the reported `__proto__` assignments in both merge directions. [Regression tests](web/tests/build-dependency.test.ts) load the exact dependency resolved by the Svelte plugin and exercise the poisoning cases and expected configuration-merge behavior. Runtime protocol and cryptographic code are unchanged by this mitigation.
-
-A version-based Dependabot alert may remain visible for `4.3.1` despite the applied patch. The package has not been relabeled, the alert is not dismissed, and no broad audit exception is configured. [Development instructions](docs/development.md#patched-build-dependency) explain reproducible installation and when to replace this temporary patch with a supported upgrade.
+The build uses an exact, consumer-scoped dependency replacement documented in the [development guide](docs/development.md#build-dependency-replacement). Tests load the dependency resolved by the actual Svelte plugin and verify its package identity, configuration behavior and prototype handling. A clean scanner result describes known advisories at the time of the check; it is not a security certification.

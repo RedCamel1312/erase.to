@@ -11,6 +11,7 @@ From the repository root:
 ```sh
 pnpm check
 pnpm test
+pnpm audit --audit-level low
 pnpm build
 ```
 
@@ -41,6 +42,8 @@ pnpm exec vitest run cli/client.test.ts
 The cryptographic tests run with the installed libsodium dependency and WebCrypto in Node. They are interoperability and regression evidence, not a new proof of the primitives or an independent audit of the complete protocol.
 
 ### Browser-controller and transport tests
+
+`web/tests/theme.test.ts` checks the System default, light fallback, live system changes, blocked storage and the System → Light → Dark → System button cycle. `web/tests/build-dependency.test.ts` checks the exact merge package resolved by the Svelte plugin, both published entrypoints and the real configuration pipeline. The complete dependency audit includes build tools without exclusions.
 
 `web/tests/lifecycle.test.ts` uses controlled asynchronous completions and clocks to check cancellation, duplicate submissions, wrong-passphrase handling, warning/expiry behavior, hidden-tab clearing and delayed results. A result arriving after clearing or after a suspended deadline must not repopulate a draft, secret or plaintext view. Network or worker completion must not extend the last-activity deadline.
 

@@ -53,7 +53,7 @@ This notice covers NGINX itself. The Alpine base image and other packages in tha
 
 ## Locally patched development dependency
 
-The Svelte build plugin's `deepmerge@4.3.1` dependency has a small repository-maintained security patch. It is outside the production JavaScript graph above. Its unchanged [MIT license notice](docs/licenses/npm/deepmerge-4.3.1/license.txt) is preserved alongside [the patch](patches/deepmerge@4.3.1.patch); the upstream package version and attribution remain intact. See [the development guide](docs/development.md#patched-build-dependency) for the affected advisory, exact scope, tests and removal criteria.
+The Svelte build plugin resolves its merge dependency to the published [`@stackline/deepmerge@1.1.0`](https://github.com/alexandroit/stackline-deepmerge/tree/v1.1.0) package through a scoped pnpm override. It is outside the production JavaScript graph above. Its unmodified [MIT license](docs/licenses/npm/stackline__deepmerge-1.1.0/LICENSE) and [NOTICE](docs/licenses/npm/stackline__deepmerge-1.1.0/NOTICE) retain both the replacement's and original project's attribution. There is no repository-maintained patch. See the [development guide](docs/development.md#build-dependency-replacement) for scope and compatibility checks.
 
 ## Rust normal and build dependencies
 

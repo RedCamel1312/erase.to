@@ -89,22 +89,22 @@ Open `http://127.0.0.1:3300`. A browser request to that origin reaches Vite, who
 
 To inspect the production build instead of hot reload, open `http://127.0.0.1:3001` after `pnpm build`. Vite development mode is not a production deployment and must not be exposed publicly. Verify production CSP, worker loading and headers against the Rust-served build separately.
 
-## Patched build dependency
+## Build dependency replacement
 
-`@sveltejs/vite-plugin-svelte@7.3.1` depends on `deepmerge@4.3.1`. The latter is affected by [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4): certain target shapes let a supplied `__proto__` key change the returned object's prototype. It is a development/build dependency, not part of the message API, CLI cryptography or delivered client. Removing the optional formatter would not remove this dependency.
+The Svelte Vite plugin requests `deepmerge@4.3.1`. This repository resolves that one consumer to the published [`@stackline/deepmerge@1.1.0`](https://github.com/alexandroit/stackline-deepmerge/tree/v1.1.0) package through a scoped pnpm override. The original `deepmerge` package and the former local patch are absent from the lockfile. The replacement's real package name, version and integrity hash remain visible; this is not an advisory exclusion or a relabeled copy of the affected package.
 
-No corrected release of this dependency or a compatible newer Svelte plugin was available when the mitigation was added. The repository therefore carries [a minimal pnpm patch](../patches/deepmerge@4.3.1.patch) that ignores `__proto__` in both source and target copy loops. It covers the source file and the published CommonJS/UMD entrypoints. The package retains its real upstream version and license; there is no advisory suppression or renamed replacement package.
+The replacement preserves the API used by the plugin and rejects `__proto__` in both object-copy directions. It has no runtime dependencies or installation hooks. Its [LICENSE](licenses/npm/stackline__deepmerge-1.1.0/LICENSE) and [NOTICE](licenses/npm/stackline__deepmerge-1.1.0/NOTICE) are included unchanged. It is used only to merge build configuration and is not bundled into the application or CLI.
 
-`pnpm-workspace.yaml` registers the patch, and `pnpm-lock.yaml` records its hash. A frozen installation applies it reproducibly. Docker must copy `patches/` before installing dependencies. Keep the patch in source archives and build contexts.
+This is a small, comparatively young upstream project. The exact version is pinned instead of accepting a floating range. The override is limited to the reviewed Svelte plugin version so a plugin upgrade requires another compatibility review. Prefer a supported Svelte release without the original dependency when one is available; reassess and remove the override then.
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm exec vitest run web/tests/build-dependency.test.ts
+pnpm audit --audit-level low
+pnpm build
 ```
 
-The regression resolves the dependency from the actual Svelte plugin. It tests null-prototype targets, null/undefined/primitive placeholders and an own `__proto__` key on the target, as well as normal compiler-option, array-replacement, function and RegExp behavior. The original package failed the poisoning checks; the patched package passes them. Review [the upstream discussion](https://github.com/TehShrike/deepmerge/issues/273) and a real supported upgrade when one becomes available, then remove the patch only after rerunning these checks and the build.
-
-Dependabot and other version-based scanners can continue reporting `4.3.1` because they do not necessarily evaluate local patches. That remaining alert is not hidden or presented as a fixed upstream release. See [the security policy](../SECURITY.md).
+The tests resolve the package from the actual plugin, assert its published identity, and exercise the ESM and CommonJS exports. Coverage includes nested placeholder and null-prototype cases, arrays, callbacks, compiler options, RegExp values and the plugin's own configuration pipeline. Frozen installation, the production build and container checks run in CI. The complete JavaScript audit includes build tools and fails from Low severity upward without exclusions.
 
 ## Shared protocol and worker boundaries
 

@@ -4,8 +4,8 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  deepmerge@4.3.1: 88b0436747f9b7041c39bdf27baadee2fc9632348fa0615b0f69b78ecc7210a8
+overrides:
+  '@sveltejs/vite-plugin-svelte@7.3.1>deepmerge': npm:@stackline/deepmerge@1.1.0
 
 importers:
 
@@ -382,6 +382,10 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
+  '@stackline/deepmerge@1.1.0':
+    resolution: {integrity: sha512-bEQ1EpXrlu9PTTgKD9z85MWYGjDMv79fF2qn2LYdmukpuj6onkn5kZlRAu0PaZvUv9ZQerwtDVgIEn2LYtsE7w==}
+    engines: {node: '>=14.17.0'}
+
   '@sveltejs/acorn-typescript@1.0.13':
     resolution: {integrity: sha512-wgKggnhZVL9Bfx1OaKKTrYY9BFRk6C8UAkQNUcIv1+llzYrIqy+RZm5HPKzn0NpEBvTVhTqB4kQyllZywsRBRQ==}
     peerDependencies:
@@ -466,10 +470,6 @@ packages:
 
   decimal.js@10.6.0:
     resolution: {integrity: sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==}
-
-  deepmerge@4.3.1:
-    resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
-    engines: {node: '>=0.10.0'}
 
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
@@ -1084,6 +1084,8 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
+  '@stackline/deepmerge@1.1.0': {}
+
   '@sveltejs/acorn-typescript@1.0.13(acorn@8.19.0)':
     dependencies:
       acorn: 8.19.0
@@ -1092,7 +1094,7 @@ snapshots:
 
   '@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3)(vite@8.3.5(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.23.15))':
     dependencies:
-      deepmerge: 4.3.1(patch_hash=88b0436747f9b7041c39bdf27baadee2fc9632348fa0615b0f69b78ecc7210a8)
+      deepmerge: '@stackline/deepmerge@1.1.0'
       magic-string: 1.4.5
       obug: 2.2.1
       svelte: 5.57.3
@@ -1156,8 +1158,6 @@ snapshots:
       - '@noble/hashes'
 
   decimal.js@10.6.0: {}
-
-  deepmerge@4.3.1(patch_hash=88b0436747f9b7041c39bdf27baadee2fc9632348fa0615b0f69b78ecc7210a8): {}
 
   detect-libc@2.1.2: {}
 

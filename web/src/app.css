@@ -186,20 +186,23 @@ p {
 .site-header nav a:hover {
   color: var(--ink);
 }
-.theme-control {
+.theme-button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
-  color: var(--muted);
-  font-size: 0.7rem;
-  white-space: nowrap;
-}
-.theme-control select {
-  width: 91px;
+  min-width: 88px;
   min-height: 36px;
-  padding: 5px 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--ink);
   font-size: 0.73rem;
-  background: var(--paper);
+  white-space: nowrap;
+  background: transparent;
+}
+.theme-button:hover {
+  background: var(--surface);
 }
 .site-footer {
   display: flex;
@@ -914,12 +917,10 @@ input[type='file']::file-selector-button {
   .site-header nav a[href='/about'] {
     display: none;
   }
-  .theme-control {
-    gap: 5px;
-    font-size: 0.65rem;
-  }
-  .theme-control select {
-    width: 86px;
+  .theme-button {
+    gap: 6px;
+    min-width: 81px;
+    padding: 6px 8px;
     font-size: 0.69rem;
   }
   .compose-head {

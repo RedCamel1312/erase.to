@@ -5,9 +5,13 @@
   import View from './pages/View.svelte';
   import Information from './pages/Information.svelte';
   import { onionUrl } from './lib/site.ts';
-  import { ThemeController, themePreference } from './lib/theme.ts';
+  import { ThemeController, themePreference, nextThemePreference } from './lib/theme.ts';
   const path = location.pathname.replace(/\/$/, '') || '/';
   let preference = $state(themePreference(document.documentElement.dataset.theme));
+  const themeLabels = { system: 'System', light: 'Light', dark: 'Dark' };
+  const themeAction = $derived(
+    `Color theme: ${themeLabels[preference]}. Switch to ${themeLabels[nextThemePreference(preference)]}.`,
+  );
   let theme: ThemeController | undefined;
   onMount(() => {
     theme = new ThemeController((state) => {
@@ -34,15 +38,16 @@
         href="/privacy"
         aria-current={path === '/privacy' ? 'page' : undefined}>Privacy</a
       >
-      <label class="theme-control"
-        ><span>Theme</span><select
-          aria-label="Color theme"
-          value={preference}
-          onchange={(event) => theme?.set(event.currentTarget.value)}
-          ><option value="system">System</option><option value="light">Light</option><option
-            value="dark">Dark</option
-          ></select
-        ></label
+      <button
+        type="button"
+        class="theme-button"
+        aria-label={themeAction}
+        title={themeAction}
+        onclick={() => theme?.cycle()}
+        ><Icon
+          name={preference === 'system' ? 'system' : preference === 'light' ? 'sun' : 'moon'}
+          size={16}
+        /><span>{themeLabels[preference]}</span></button
       >
     </nav>
   </header>

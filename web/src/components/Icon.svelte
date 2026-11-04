@@ -3,7 +3,7 @@
     name = 'lock',
     size = 20,
   }: {
-    name?: 'lock' | 'sun' | 'moon' | 'file' | 'arrow' | 'copy' | 'check' | 'clear';
+    name?: 'lock' | 'sun' | 'moon' | 'system' | 'file' | 'arrow' | 'copy' | 'check' | 'clear';
     size?: number;
   } = $props();
 </script>
@@ -26,6 +26,9 @@
       d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"
     />
   {:else if name === 'moon'}<path d="M20 13a8 8 0 0 1-9-9 8.5 8.5 0 1 0 9 9Z" />
+  {:else if name === 'system'}<rect x="3" y="3" width="18" height="14" rx="2" /><path
+      d="M12 17v4M8 21h8"
+    />
   {:else if name === 'file'}<path d="M14 2H5v20h14V7l-5-5Zm0 0v5h5M8 12h8M8 16h6" />
   {:else if name === 'arrow'}<path d="M4 12h16m-6-6 6 6-6 6" />
   {:else if name === 'copy'}<rect x="8" y="8" width="12" height="13" rx="2" /><path

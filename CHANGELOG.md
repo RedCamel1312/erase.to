@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.1 — 2026-11-04
+
+- Restore a compact color-theme button with a System, Light and Dark cycle. System remains the default, with a light fallback.
+- Expand the project introduction, purpose and usage guide in all five README languages. Keep detailed operational material in optional sections.
+- Replace the affected build-only merge package with a pinned published alternative. Remove the local patch and check both exported entrypoints and the real Svelte configuration pipeline.
+- Audit all JavaScript dependencies in CI, including build tools, from Low severity upward without advisory exclusions.
+- Keep the message protocol, retention limits and existing links unchanged.
+
 ## 3.1.0 — 2026-11-04
 
 ### Interface and documentation
@@ -15,7 +23,7 @@
 - Bound browser and CLI response allocation independently of network chunk count. Check declared response lengths, account for decoded content, cancel rejected streams and release readers on every exit path.
 - Preserve the existing cryptographic format and retention behavior. This update remains compatible with 3.0.0 links; ordinary deployment does not restart the cache.
 
-The known build-only dependency advisory remains covered by the pinned patch and regression tests described in [SECURITY.md](SECURITY.md). It has no corrected upstream release at the time of this update.
+At this release, a build-only dependency advisory was mitigated by a pinned local patch. Version 3.1.1 replaces that dependency and removes the patch.
 
 ## 3.0.0 — 2026-11-04
 

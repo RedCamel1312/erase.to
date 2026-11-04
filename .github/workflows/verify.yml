@@ -49,8 +49,8 @@ jobs:
         run: pnpm test
       - name: Build production browser assets
         run: pnpm build
-      - name: Audit production JavaScript dependencies
-        run: pnpm audit --prod --audit-level low
+      - name: Audit all JavaScript dependencies, including build tools
+        run: pnpm audit --audit-level low
 
   server:
     name: Rust, atomic cache operations and RustSec

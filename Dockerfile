@@ -2,7 +2,6 @@ FROM node:24.22.2-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dca
 WORKDIR /source
 RUN npm install --global pnpm@11.25.0
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY patches ./patches
 RUN pnpm install --frozen-lockfile
 COPY shared ./shared
 COPY web ./web
