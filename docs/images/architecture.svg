@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="570" viewBox="0 0 1200 570" role="img" aria-labelledby="title desc">
+<title id="title">erase.to data flow and trust boundaries</title><desc id="desc">The browser encrypts text and files. Only ciphertext and access policy cross HTTPS or Tor to the Rust API and volatile Valkey cache. Keys remain in the shared URL fragment. Retrieval is atomic across API processes.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#536c9c"/></marker></defs>
+<rect width="1200" height="570" rx="16" fill="#f5f4f0"/>
+<g font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif" fill="#22272d">
+<text x="48" y="58" font-size="28" font-weight="650">Data flow and trust boundaries</text>
+<text x="48" y="87" font-size="15" fill="#5b626b">Content encryption and access enforcement are separate operations.</text>
+<rect x="48" y="126" width="340" height="310" rx="10" fill="#fff" stroke="#d5d8dc"/>
+<text x="72" y="166" font-size="20" font-weight="600">Sender / recipient</text>
+<text x="72" y="194" font-size="14" fill="#5b626b">Browser worker or command line client</text>
+<path d="M72 215H364" stroke="#d5d8dc"/>
+<text x="72" y="246" font-size="16">Text, files and file names</text>
+<text x="72" y="278" font-size="16">XChaCha20-Poly1305 + padding</text>
+<text x="72" y="310" font-size="16">Optional Argon2id passphrase</text>
+<text x="72" y="342" font-size="16">Local lifetime and cancellation</text>
+<rect x="72" y="368" width="292" height="43" rx="5" fill="#eaf0fa"/>
+<text x="88" y="395" font-size="14" fill="#334f7f">Master secret stays with the client</text>
+<path d="M412 270H596" stroke="#536c9c" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="504" y="221" text-anchor="middle" font-size="14" font-weight="600">HTTPS / Tor</text>
+<text x="504" y="246" text-anchor="middle" font-size="13" fill="#5b626b">ciphertext + capabilities</text>
+<text x="504" y="306" text-anchor="middle" font-size="13" fill="#5b626b">No plaintext or master key</text>
+<rect x="620" y="126" width="532" height="140" rx="10" fill="#fff" stroke="#d5d8dc"/>
+<text x="644" y="166" font-size="20" font-weight="600">Rust / Axum API</text>
+<text x="644" y="196" font-size="15">Strict validation · single-use proof of work</text>
+<text x="644" y="224" font-size="15">Request deadlines · bounded work · no visitor profiles</text>
+<path d="M886 280V312" stroke="#536c9c" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="620" y="326" width="532" height="110" rx="10" fill="#fff" stroke="#d5d8dc"/>
+<text x="644" y="364" font-size="20" font-weight="600">Valkey · volatile storage</text>
+<text x="644" y="394" font-size="15">Authorize → decrement → delete → return ciphertext</text>
+<text x="644" y="418" font-size="13" fill="#5b626b">One atomic operation, shared by all API processes</text>
+<path d="M48 468H1152" stroke="#d5d8dc"/>
+<text x="48" y="499" font-size="14" fill="#5b626b">Recipients can retain received content. A compromised client or delivered JavaScript defeats browser encryption.</text>
+<text x="48" y="524" font-size="14" fill="#5b626b">RAM-only operation depends on host configuration. Neither endpoint promises anonymity against traffic correlation.</text>
+</g></svg>

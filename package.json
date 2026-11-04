@@ -1,0 +1,36 @@
+{
+  "name": "erase-to",
+  "version": "3.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24.0.0 <25.0.0"
+  },
+  "scripts": {
+    "dev": "vite --config web/vite.config.ts --host 127.0.0.1 --port 3300",
+    "build": "vite build --config web/vite.config.ts",
+    "check": "svelte-check --tsconfig web/tsconfig.json && tsc --noEmit --project tsconfig.json",
+    "test": "vitest run --config vitest.config.ts",
+    "cli": "tsx cli/index.ts",
+    "format": "prettier --write \"*.{js,mjs,cjs,ts,json}\" \"cli/**/*.{js,mjs,cjs,ts,json}\" \"shared/**/*.{js,mjs,cjs,ts,json}\" \"web/**/*.{js,mjs,cjs,ts,json,svelte,css,html}\" \"tests/**/*.{js,mjs,cjs,ts,json}\"",
+    "format:check": "prettier --check \"*.{js,mjs,cjs,ts,json}\" \"cli/**/*.{js,mjs,cjs,ts,json}\" \"shared/**/*.{js,mjs,cjs,ts,json}\" \"web/**/*.{js,mjs,cjs,ts,json,svelte,css,html}\" \"tests/**/*.{js,mjs,cjs,ts,json}\""
+  },
+  "dependencies": {
+    "libsodium-wrappers-sumo": "0.8.4",
+    "svelte": "5.57.3"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/node": "24.13.3",
+    "jsdom": "30.1.3",
+    "prettier": "3.9.10",
+    "prettier-plugin-svelte": "4.1.1",
+    "svelte-check": "4.7.8",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vite": "8.3.5",
+    "vitest": "5.1.0"
+  },
+  "license": "MIT"
+}

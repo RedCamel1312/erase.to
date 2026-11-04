@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.woff2 binary
+# Keep third-party notices byte-for-byte, including their original whitespace.
+docs/licenses/** -text -whitespace
+# pnpm hashes patch bytes; diff context also intentionally retains indentation.
+patches/*.patch -text -whitespace

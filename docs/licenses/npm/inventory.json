@@ -1,0 +1,235 @@
+[
+  {
+    "name": "@jridgewell/gen-mapping",
+    "version": "0.3.13",
+    "license": "MIT",
+    "homepage": "https://github.com/jridgewell/sourcemaps/tree/main/packages/gen-mapping",
+    "directory": "jridgewell__gen-mapping-0.3.13",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "@jridgewell/remapping",
+    "version": "2.3.5",
+    "license": "MIT",
+    "homepage": "https://github.com/jridgewell/sourcemaps/tree/main/packages/remapping",
+    "directory": "jridgewell__remapping-2.3.5",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "@jridgewell/resolve-uri",
+    "version": "3.1.2",
+    "license": "MIT",
+    "homepage": "https://github.com/jridgewell/resolve-uri#readme",
+    "directory": "jridgewell__resolve-uri-3.1.2",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "@jridgewell/sourcemap-codec",
+    "version": "1.6.0",
+    "license": "MIT",
+    "homepage": "https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec",
+    "directory": "jridgewell__sourcemap-codec-1.6.0",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "@jridgewell/trace-mapping",
+    "version": "0.3.31",
+    "license": "MIT",
+    "homepage": "https://github.com/jridgewell/sourcemaps/tree/main/packages/trace-mapping",
+    "directory": "jridgewell__trace-mapping-0.3.31",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "@sveltejs/acorn-typescript",
+    "version": "1.0.13",
+    "license": "MIT",
+    "homepage": "https://github.com/sveltejs/acorn-typescript#readme",
+    "directory": "sveltejs__acorn-typescript-1.0.13",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE.md"
+    ]
+  },
+  {
+    "name": "@types/estree",
+    "version": "1.0.10",
+    "license": "MIT",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/estree",
+    "directory": "types__estree-1.0.10",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "acorn",
+    "version": "8.19.0",
+    "license": "MIT",
+    "homepage": "https://github.com/acornjs/acorn",
+    "directory": "acorn-8.19.0",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "aria-query",
+    "version": "5.3.1",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/A11yance/aria-query#readme",
+    "directory": "aria-query-5.3.1",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "axobject-query",
+    "version": "4.1.0",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/A11yance/axobject-query#readme",
+    "directory": "axobject-query-4.1.0",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "clsx",
+    "version": "2.1.1",
+    "license": "MIT",
+    "homepage": "https://github.com/lukeed/clsx#readme",
+    "directory": "clsx-2.1.1",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "license"
+    ]
+  },
+  {
+    "name": "devalue",
+    "version": "5.9.4",
+    "license": "MIT",
+    "homepage": "https://github.com/sveltejs/devalue#readme",
+    "directory": "devalue-5.9.4",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "esm-env",
+    "version": "1.2.2",
+    "license": "MIT",
+    "homepage": "https://github.com/benmccann/esm-env",
+    "directory": "esm-env-1.2.2",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "esrap",
+    "version": "2.4.0",
+    "license": "MIT",
+    "homepage": "https://github.com/sveltejs/esrap#readme",
+    "directory": "esrap-2.4.0",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "is-reference",
+    "version": "3.0.3",
+    "license": "MIT",
+    "homepage": "https://github.com/Rich-Harris/is-reference#readme",
+    "directory": "is-reference-3.0.3",
+    "notice_kind": "upstream-package-declaration",
+    "notice_files": [
+      "README.md",
+      "package.json"
+    ]
+  },
+  {
+    "name": "libsodium-sumo",
+    "version": "0.8.4",
+    "license": "ISC",
+    "homepage": "https://github.com/jedisct1/libsodium.js",
+    "directory": "libsodium-sumo-0.8.4",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "libsodium-wrappers-sumo",
+    "version": "0.8.4",
+    "license": "ISC",
+    "homepage": "https://github.com/jedisct1/libsodium.js",
+    "directory": "libsodium-wrappers-sumo-0.8.4",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "locate-character",
+    "version": "3.0.0",
+    "license": "MIT",
+    "homepage": "https://gitlab.com/Rich-Harris/locate-character#README",
+    "directory": "locate-character-3.0.0",
+    "notice_kind": "upstream-package-declaration",
+    "notice_files": [
+      "README.md",
+      "package.json"
+    ]
+  },
+  {
+    "name": "magic-string",
+    "version": "0.30.21",
+    "license": "MIT",
+    "homepage": "https://github.com/Rich-Harris/magic-string#readme",
+    "directory": "magic-string-0.30.21",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
+    "name": "svelte",
+    "version": "5.57.3",
+    "license": "MIT",
+    "homepage": "https://svelte.dev",
+    "directory": "svelte-5.57.3",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE.md"
+    ]
+  },
+  {
+    "name": "zimmerframe",
+    "version": "1.1.5",
+    "license": "MIT",
+    "homepage": "https://github.com/sveltejs/zimmerframe#readme",
+    "directory": "zimmerframe-1.1.5",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  }
+]

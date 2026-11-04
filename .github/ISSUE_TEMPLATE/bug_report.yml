@@ -1,0 +1,72 @@
+name: Bug report
+description: Report a reproducible problem using synthetic content only.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public. Never include private share links, message content, passphrases, keys, capabilities, credentials, IP addresses, access logs or request headers. Screenshots and browser network exports can contain these too.
+
+        For an undisclosed security vulnerability, use the private channel in [SECURITY.md](https://github.com/RedCamel1312/erase.to/blob/main/SECURITY.md). Reproduce ordinary bugs with newly created synthetic content.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked existing issues and used only synthetic content in this report.
+          required: true
+        - label: This report contains no private links, messages, capabilities, secrets, IP addresses or access logs.
+          required: true
+        - label: This is not an undisclosed exploitable security vulnerability.
+          required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      options:
+        - Browser application
+        - Command-line client
+        - Rust API or cache
+        - Self-hosting or container setup
+        - Documentation
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Include the release or commit if known. For the hosted site, give the approximate date instead.
+      placeholder: "v3.0.0 / commit / hosted site on YYYY-MM-DD"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser or CLI version, operating system, hosted or self-hosted, and relevant non-secret configuration. Omit hostnames and network addresses.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Give a minimal sequence using invented text or files. Describe settings without pasting a real share link.
+      placeholder: |
+        1. Create a note containing the synthetic text "test".
+        2. Select ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the user-facing error text if helpful. Do not attach network exports, request dumps or production logs.
+    validations:
+      required: true

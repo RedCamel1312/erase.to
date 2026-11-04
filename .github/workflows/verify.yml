@@ -1,0 +1,191 @@
+name: Verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 7 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+  NODE_VERSION: "24.22.2"
+  PNPM_VERSION: "11.25.0"
+  RUST_VERSION: "1.99.1"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  web:
+    name: Browser, shared crypto and CLI
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
+      - name: Install pinned pnpm and dependencies
+        run: |
+          npm install --global "pnpm@$PNPM_VERSION"
+          pnpm install --frozen-lockfile
+      - name: Check source formatting
+        run: pnpm format:check
+      - name: Type and Svelte checks
+        run: pnpm check
+      - name: Unit and lifecycle tests
+        run: pnpm test
+      - name: Build production browser assets
+        run: pnpm build
+      - name: Audit production JavaScript dependencies
+        run: pnpm audit --prod --audit-level low
+
+  server:
+    name: Rust, atomic cache operations and RustSec
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: server
+    env:
+      CACHE_URL: redis://127.0.0.1:6379/
+      VALKEY_IMAGE: valkey/valkey:8.1.4-alpine@sha256:e706d1213aaba6896c162bb6a3a9e1894e1a435f28f8f856d14fab2e10aa098b
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal --component rustfmt --component clippy
+          rustup override set "$RUST_VERSION"
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Lint all Rust targets
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Start isolated, non-persistent test cache
+        run: |
+          docker run --detach --name erase-ci-cache \
+            --publish 127.0.0.1:6379:6379 --user 999:999 --read-only \
+            --tmpfs /data:rw,noexec,nosuid,nodev,size=1m,uid=999,gid=999,mode=0700 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --memory 1g --memory-swap 1g --pids-limit 32 \
+            --ulimit core=0 --log-driver none \
+            "$VALKEY_IMAGE" valkey-server \
+            --save '' --appendonly no --maxmemory 512mb --maxmemory-policy noeviction \
+            --slowlog-log-slower-than -1 --slowlog-max-len 0 \
+            --latency-monitor-threshold 0 --latency-tracking no --acllog-max-len 0 --logfile /dev/null \
+            --client-output-buffer-limit "normal 256mb 128mb 15" \
+            --client-query-buffer-limit 192mb --proto-max-bulk-len 128mb
+          for attempt in $(seq 1 30); do
+            if docker exec erase-ci-cache valkey-cli ping | grep -qx PONG; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Isolated Valkey did not become ready." >&2
+          exit 1
+      - name: Unit, malformed-input and multi-instance integration tests
+        # Tests use random namespaces; serial execution also isolates ACL fault injection.
+        run: cargo test --locked --all-targets -- --test-threads=1
+      - name: Install pinned RustSec auditor
+        run: cargo install cargo-audit --version 0.22.2 --locked
+      - name: Audit locked Rust dependencies
+        run: cargo audit
+      - name: Remove isolated cache
+        if: always()
+        run: docker rm --force erase-ci-cache >/dev/null 2>&1 || true
+
+  container:
+    name: Production container and synthetic end-to-end checks
+    needs: [web, server]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      COMPOSE_PROJECT_NAME: erase-ci
+      PUBLIC_ORIGINS: http://127.0.0.1:3001
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
+      - name: Install pinned client test dependencies
+        run: |
+          npm install --global "pnpm@$PNPM_VERSION"
+          pnpm install --frozen-lockfile
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+      - name: Check network isolation and loopback-only publishing
+        run: |
+          docker compose config --format json | python3 -c '
+          import json, sys
+          config = json.load(sys.stdin)
+          services, networks = config["services"], config["networks"]
+          assert networks["cache_internal"]["internal"] is True
+          assert networks["app_internal"]["internal"] is True
+          assert not networks["ingress"].get("internal", False)
+          assert set(services["cache"]["networks"]) == {"cache_internal"}
+          assert set(services["app"]["networks"]) == {"cache_internal", "app_internal"}
+          assert set(services["proxy"]["networks"]) == {"app_internal", "ingress"}
+          assert not services["cache"].get("ports") and not services["app"].get("ports")
+          assert all(p["host_ip"] == "127.0.0.1" for p in services["proxy"]["ports"])
+          '
+      - name: Build production image from pinned base images
+        run: docker compose build --pull
+      - name: Start isolated application and cache
+        run: |
+          docker compose up --detach --wait --wait-timeout 60
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3001/healthz >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Container application did not become ready." >&2
+          exit 1
+      - name: Check packaged license notices
+        run: |
+          docker compose exec -T app sh -ec '
+            test -s /app/LICENSE
+            test -s /app/THIRD_PARTY.md
+            test -s /app/docs/licenses/native/nginx-1.30.6/LICENSE
+            for ecosystem in npm rust native; do
+              test -d "/app/docs/licenses/$ecosystem"
+              test -n "$(find "/app/docs/licenses/$ecosystem" -type f -print -quit)"
+            done
+          '
+          docker compose exec -T proxy nginx -v
+      - name: Exercise only synthetic notes against local containers
+        run: pnpm exec tsx tests/e2e.ts --server http://127.0.0.1:3001
+      - name: Verify a full-size encrypted text and file handoff
+        run: pnpm exec tsx tests/large-handoff.ts --server http://127.0.0.1:3001
+      - name: Report only container status on failure
+        if: failure()
+        run: |
+          docker compose ps --all
+          for service in cache app proxy; do
+            id=$(docker compose ps --all --quiet "$service")
+            if [ -n "$id" ]; then
+              docker inspect --format '{{.Name}} state={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}} restarts={{.RestartCount}} ports={{json .NetworkSettings.Ports}}' "$id"
+            fi
+          done
+      - name: Remove isolated containers and temporary state
+        if: always()
+        run: docker compose down --volumes --remove-orphans

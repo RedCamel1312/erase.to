@@ -1,0 +1,12 @@
+SocksPort 0
+ControlPort 0
+ControlSocket 0
+Log notice file /dev/null
+SafeLogging 1
+HiddenServiceDir /var/lib/tor/erase/
+HiddenServiceVersion 3
+HiddenServicePort 80 unix:/run/erase-onion/erase.sock
+HiddenServiceEnableIntroDoSDefense 1
+HiddenServiceEnableIntroDoSRatePerSec 10
+HiddenServiceEnableIntroDoSBurstPerSec 20
+HiddenServicePoWDefensesEnabled 1

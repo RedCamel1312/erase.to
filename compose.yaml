@@ -1,0 +1,113 @@
+services:
+  cache:
+    image: valkey/valkey:8.1.4-alpine@sha256:e706d1213aaba6896c162bb6a3a9e1894e1a435f28f8f856d14fab2e10aa098b
+    command:
+      - valkey-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - 512mb
+      - --maxmemory-policy
+      - noeviction
+      - --slowlog-log-slower-than
+      - "-1"
+      - --slowlog-max-len
+      - "0"
+      - --latency-monitor-threshold
+      - "0"
+      - --latency-tracking
+      - "no"
+      - --client-output-buffer-limit
+      - "normal 256mb 128mb 15"
+      - --client-query-buffer-limit
+      - 192mb
+      - --proto-max-bulk-len
+      - 128mb
+      - --acllog-max-len
+      - "0"
+      - --maxclients
+      - "64"
+      - --logfile
+      - /dev/null
+    user: "999:999"
+    read_only: true
+    tmpfs:
+      - /data:rw,noexec,nosuid,nodev,size=1m,uid=999,gid=999,mode=0700
+    mem_limit: 1g
+    memswap_limit: 1g
+    pids_limit: 32
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ulimits:
+      core: {soft: 0, hard: 0}
+    healthcheck:
+      test: [CMD, valkey-cli, ping]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+    logging:
+      driver: none
+    networks: [cache_internal]
+    restart: unless-stopped
+  app:
+    build:
+      context: .
+      args:
+        VITE_ONION_URL: ${VITE_ONION_URL:-}
+    environment:
+      CACHE_URL: redis://cache:6379/
+      PUBLIC_ORIGINS: ${PUBLIC_ORIGINS:-http://127.0.0.1:3001}
+      MAX_IN_FLIGHT: "2"
+      MAX_STORAGE_BYTES: "268435456"
+    depends_on:
+      cache: {condition: service_healthy}
+    read_only: true
+    mem_limit: 768m
+    memswap_limit: 768m
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ulimits:
+      core: {soft: 0, hard: 0}
+      nofile: {soft: 4096, hard: 4096}
+    logging:
+      driver: none
+    networks: [cache_internal, app_internal]
+    restart: unless-stopped
+  proxy:
+    image: nginx:1.30.6-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+    entrypoint: [nginx, -c, /etc/nginx/erase-proxy.conf, -g, "daemon off;"]
+    user: "101:101"
+    volumes:
+      - ./deploy/container-proxy.conf:/etc/nginx/erase-proxy.conf:ro
+    depends_on:
+      app: {condition: service_started}
+    ports: ["127.0.0.1:3001:8080"]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=4m,uid=101,gid=101,mode=0700
+    mem_limit: 128m
+    memswap_limit: 128m
+    pids_limit: 32
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ulimits:
+      core: {soft: 0, hard: 0}
+      nofile: {soft: 1024, hard: 1024}
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/healthz]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging:
+      driver: none
+    networks: [app_internal, ingress]
+    restart: unless-stopped
+networks:
+  cache_internal:
+    internal: true
+  app_internal:
+    internal: true
+  ingress: {}

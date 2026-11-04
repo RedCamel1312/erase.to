@@ -1,0 +1,12 @@
+.git
+node_modules
+web/dist
+server/target
+outputs
+test-results
+.env*
+*.log
+*.key
+*.pem
+*.rdb
+*.aof

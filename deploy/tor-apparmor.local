@@ -1,0 +1,4 @@
+# Add to /etc/apparmor.d/local/system_tor on Debian/Ubuntu, then reload that profile.
+# Do not disable Tor's AppArmor profile to make the socket accessible.
+/run/erase-onion/ r,
+/run/erase-onion/erase.sock rw,

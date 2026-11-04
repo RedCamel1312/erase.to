@@ -1,0 +1,9 @@
+node_modules/
+web/dist/
+server/
+docs/licenses/
+.github/
+coverage/
+test-results/
+playwright-report/
+pnpm-lock.yaml
