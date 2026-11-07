@@ -64,7 +64,7 @@ O remetente pode revogar um pacote enquanto houver uma cópia no servidor. A rev
 | Disponibilidade limitada | O prazo de validade e o número de retiradas valem ao mesmo tempo. A autorização, as alterações do contador e a exclusão final são atômicas entre processos de API que compartilham uma única instância primária do Valkey. |
 | Controle do remetente | Uma credencial independente de revogação remove a cópia restante no servidor. Ela não faz parte do link do destinatário. |
 | Limpeza local | Limpeza manual, prazo de cinco minutos de inatividade com aviso 30 segundos antes e limpeza do conteúdo descriptografado ao ocultar a aba. |
-| Acesso e operação | Clientes para navegador e linha de comando, acesso onion opcional pelo Tor Browser e hospedagem própria com Rust, Svelte e Valkey sem persistência. |
+| Acesso e operação | Clientes para navegador e linha de comando, acesso pelo Tor Browser ou por [um roteador I2P local](docs/i2p.md) e hospedagem própria com Rust, Svelte e Valkey sem persistência. |
 
 ## Privacidade durante uma sessão
 
@@ -139,7 +139,7 @@ pnpm cli help
 
 O [guia de desenvolvimento](docs/development.md) aborda Rust, uma instância isolada do Valkey e o servidor de desenvolvimento do navegador. O [guia de testes](docs/testing.md) descreve verificações com cache real, vários processos e fluxos completos. Os testes nunca devem usar um cache de produção.
 
-O [guia da CLI](docs/cli.md) explica envio, recebimento, entrada de frases-senha e revogação. Não coloque links completos, mensagens ou frases-senha em argumentos ou no histórico do shell. A CLI aceita HTTPS e HTTP local para desenvolvimento; ela rejeita endereços onion porque não implementa transporte Tor. Use o Tor Browser para acesso onion. Arquivos recebidos nunca são abertos nem pré-visualizados automaticamente.
+O [guia da CLI](docs/cli.md) explica envio, recebimento, entrada de frases-senha e revogação. Não coloque links completos, mensagens ou frases-senha em argumentos ou no histórico do shell. A CLI aceita HTTPS e HTTP local para desenvolvimento; ela rejeita endereços Tor e I2P antes da resolução do nome. Use o Tor Browser ou um navegador configurado com o seu proxy I2P local. Arquivos recebidos nunca são abertos nem pré-visualizados automaticamente.
 
 Os principais diretórios são `web/` (interface), `shared/` (protocolo e criptografia), `server/` (API e operações atômicas do cache), `cli/` e `deploy/`. A CI verifica a aplicação, o comportamento com cache real e o contêiner de produção. O [índice da documentação](docs/README.md) reúne a navegação completa.
 

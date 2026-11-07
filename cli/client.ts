@@ -4,9 +4,14 @@ import type { Challenge, CreatedResponse, Metadata } from '../shared/index';
 export function serverOrigin(input: string): string {
   const url = new URL(input);
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
-  if (url.hostname.replace(/\.+$/, '').endsWith('.onion'))
+  const hostname = url.hostname.replace(/\.+$/, '');
+  if (hostname.endsWith('.onion'))
     throw new Error(
       'Use the onion service in Tor Browser. This CLI does not provide a Tor transport.',
+    );
+  if (hostname === 'i2p' || hostname.endsWith('.i2p'))
+    throw new Error(
+      'Use a browser configured for your local I2P router. This CLI does not provide an I2P transport.',
     );
   if (
     url.username ||

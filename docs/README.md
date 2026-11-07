@@ -9,6 +9,7 @@ Start with the [project overview](../README.md) for the editor, capabilities and
 | If you want to… | Read |
 | --- | --- |
 | Understand what the service protects, what it reveals and whom you trust | [Threat model](threat-model.md) |
+| Reach the editor over I2P or set up a destination for your instance | [I2P access](i2p.md) |
 | Run your own public instance or plan an update | [Operations and deployment](operations.md) |
 | Send, receive or revoke a package from a terminal | [Command line client](cli.md) |
 | Work on the browser, shared library or Rust API | [Development](development.md) |

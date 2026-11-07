@@ -22,6 +22,7 @@ Update both inventories and copied notices when a lockfile changes. Regenerate t
 | [@jridgewell/resolve-uri](https://github.com/jridgewell/resolve-uri#readme) | 3.1.2 | MIT | [LICENSE](docs/licenses/npm/jridgewell__resolve-uri-3.1.2/LICENSE) |
 | [@jridgewell/sourcemap-codec](https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec) | 1.6.0 | MIT | [LICENSE](docs/licenses/npm/jridgewell__sourcemap-codec-1.6.0/LICENSE) |
 | [@jridgewell/trace-mapping](https://github.com/jridgewell/sourcemaps/tree/main/packages/trace-mapping) | 0.3.31 | MIT | [LICENSE](docs/licenses/npm/jridgewell__trace-mapping-0.3.31/LICENSE) |
+| [@noble/hashes](https://paulmillr.com/noble/) | 2.4.0 | MIT | [LICENSE](docs/licenses/npm/noble__hashes-2.4.0/LICENSE) |
 | [@sveltejs/acorn-typescript](https://github.com/sveltejs/acorn-typescript#readme) | 1.0.13 | MIT | [LICENSE.md](docs/licenses/npm/sveltejs__acorn-typescript-1.0.13/LICENSE.md) |
 | [@types/estree](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/estree) | 1.0.10 | MIT | [LICENSE](docs/licenses/npm/types__estree-1.0.10/LICENSE) |
 | [acorn](https://github.com/acornjs/acorn) | 8.19.0 | MIT | [LICENSE](docs/licenses/npm/acorn-8.19.0/LICENSE) |

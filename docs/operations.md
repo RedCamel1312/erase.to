@@ -59,15 +59,15 @@ curl --fail http://127.0.0.1:3001/healthz
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `BIND` | `127.0.0.1:3001` | HTTP listener. Keep it private behind the proxy. |
-| `PUBLIC_ORIGINS` | Development origin | Comma-separated exact origins, without trailing slashes. Include the onion origin only if deployed. |
+| `PUBLIC_ORIGINS` | Development origin | Comma-separated exact origins, without trailing slashes. Add an onion or I2P origin only when deployed. |
 | `CACHE_URL` | `redis://127.0.0.1:6379/` | Private cache connection; use the Unix socket example for native deployment. |
 | `CACHE_PREFIX` | `erase:{notes}:` | Bounded key namespace. Independent application instances must share it to coordinate access. |
 | `POW_BITS` | `18` | Client creation work factor; increasing it costs battery and may exclude slower devices. |
 | `MAX_CHALLENGES` | `4096` | Upper bound on concurrent creation challenges. |
 | `MAX_NOTES` | `2048` | Maximum number of live packages. |
 | `MAX_STORAGE_BYTES` | `268435456` | Conservative application admission budget, below the cache memory limit. |
-| `MAX_IN_FLIGHT` | `2` | Concurrent API operations per process. |
-| `REQUESTS_PER_SECOND` | `100` | Shared global API limit. |
+| `MAX_IN_FLIGHT` | `2` | Maximum concurrent large packets per process (minimum 2). Uploads may occupy at most one less than this total. |
+| `REQUESTS_PER_SECOND` | `100` | Total cache-wide request rate, divided equally between public operations and note access. |
 | `CHALLENGES_PER_SECOND` | `10` | Shared global challenge issuance limit. |
 | `CREATES_PER_SECOND` | `8` | Shared global creation limit. |
 | `CACHE_TIMEOUT_MS` | `5000` | Deadline on cache operations. Mutations are not automatically retried. |
@@ -75,6 +75,7 @@ curl --fail http://127.0.0.1:3001/healthz
 | `CONNECTION_LIFETIME_SECONDS` | `360` | Absolute backend TCP lifetime; traffic does not reset it. |
 | `REQUIRE_SAFE_CACHE` | `true` | Reject startup/reconnection when persistence or memory policy is unsafe. Keep enabled. |
 | `STATIC_DIR` | `../web/dist` | Directory containing the built frontend. |
+| `VITE_I2P_URL` | Empty | Optional canonical HTTP B32 origin, pinned at build time. See [I2P](i2p.md). |
 | `VITE_ONION_URL` | Empty | Optional public onion origin embedded at frontend build time. Never place secrets in Vite variables. |
 
 Protocol limits are intentionally fixed and validated by every client: 64 MiB total input, 8 MiB UTF-8 text, eight files, 1–100 retrievals and 60 seconds–7 days retention. Changing only a proxy or environment limit does not extend the protocol.
@@ -97,7 +98,11 @@ The TLS 1.2 cipher list follows the [TLSRef intermediate recommendations](https:
 
 The proxy disables request/response buffering, temporary response files, retries and access logs. Request/proxy temporary paths are under `/run/erase-nginx` as a second safeguard against disk-backed buffering. Install `deploy/nginx-hardening.conf` as a systemd drop-in; its runtime directory must exist before nginx starts. This affects the whole host nginx service, so review other sites before applying it.
 
-Request and connection limits are keyed by the service name, not client IPs. Header, body and idle deadlines supplement the Rust listener's absolute connection lifetime. These are resource controls; they cannot guarantee availability against an attack that fills the server's internet connection. Upstream filtering requires a separate provider decision and may change the privacy model.
+Install `deploy/nginx-admission.conf` as `/etc/nginx/erase-admission.conf` before checking or reloading the native config. Compose mounts the same file read-only. Each service name has four independent request and active-connection budgets for public pages and other traffic, challenge issuance, uploads, and note access (metadata, open and revoke). The proxy derives the class from the HTTP method and normalized path. Only the class and configured service name enter its shared-memory counters.
+
+Each class allows 60 requests per second. Challenge issuance has an additional ceiling of 10 per second with a burst of 20. The clearnet and Compose proxies allow eight concurrent requests per class, and the onion and I2P proxies allow four. A saturated challenge class can reject new challenges while an existing recipient still reaches the access endpoint. Proxy-generated rate and concurrency rejections carry `Retry-After`. A client must never retry a consuming operation automatically.
+
+The proxy recognizes the shape of an access request. Only the API can verify its capability. Requests with a plausible note ID and the wrong capability can still compete for the access budget, and all operations ultimately share worker, cache and network resources. Header, body and idle deadlines supplement the Rust listener's absolute connection lifetime.
 
 Keep the ACME webroot identical in nginx and the renewal client. The template uses `/var/www/erase-acme`, including for `www`; an existing renewal configuration must keep using that same directory. Ensure certificate renewal is enabled and verify its deploy hook (`nginx -t && systemctl reload nginx`). A renewal timer being enabled is not the same as a successful renewal simulation. Monitor expiry without logging visitor requests.
 

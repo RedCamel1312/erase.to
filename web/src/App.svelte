@@ -4,7 +4,7 @@
   import Create from './pages/Create.svelte';
   import View from './pages/View.svelte';
   import Information from './pages/Information.svelte';
-  import { onionUrl } from './lib/site.ts';
+  import { i2pOrigin, onionUrl } from './lib/site.ts';
   import { ThemeController, themePreference, nextThemePreference } from './lib/theme.ts';
   const path = location.pathname.replace(/\/$/, '') || '/';
   let preference = $state(themePreference(document.documentElement.dataset.theme));
@@ -68,7 +68,7 @@
       <a href="/about">About</a><a href="/privacy">Privacy &amp; security</a><a href="/terms"
         >Terms</a
       >{#if onionUrl}<a href={onionUrl} target="_blank" rel="noopener noreferrer">Onion service</a
-        >{/if}<a
+        >{/if}{#if i2pOrigin}<a href="/privacy#i2p">I2P service</a>{/if}<a
         href="https://github.com/RedCamel1312/erase.to"
         target="_blank"
         rel="noopener noreferrer">Source ↗</a

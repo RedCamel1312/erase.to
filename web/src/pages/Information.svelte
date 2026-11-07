@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onionUrl } from '../lib/site.ts';
+  import { i2pOrigin, onionUrl } from '../lib/site.ts';
   const btcAddress = 'bc1qddfz8u589nvh0gcxdqcz3yltracn9t9qq9jtm7';
   let copyStatus = $state('');
   async function copyAddress() {
@@ -238,6 +238,28 @@
           risks.
         </p>
       </section>{/if}
+    {#if i2pOrigin}
+      <section id="i2p" aria-labelledby="i2p-heading">
+        <h2 id="i2p-heading">I2P service</h2>
+        <p>
+          Configure your browser to use your local I2P router's HTTP proxy, then open this
+          destination in that browser. Compare the complete address before entering a message.
+        </p>
+        <code class="identifier">{i2pOrigin}/</code>
+        <p>
+          The I2P router carries HTTP through an encrypted tunnel to this destination. You still
+          trust the browser, its proxy configuration, the router, and the code served by the site. A
+          public web gateway could read or change that code.
+        </p>
+        <p>
+          Some browsers withhold WebCrypto and clipboard access on HTTP addresses. On this
+          configured I2P destination the encryption worker can derive the same HKDF-SHA-256 keys
+          with a bundled implementation. It still requires the browser's secure random generator.
+          Select and copy a link manually if clipboard access is unavailable. The CLI has no I2P
+          transport.
+        </p>
+      </section>
+    {/if}
     <section>
       <h2>Limits of the model</h2>
       <p>
@@ -246,10 +268,10 @@
         senders you trust.
       </p>
       <p>
-        The browser, delivered JavaScript, TLS connection, and running server must be trustworthy.
-        Compromising any of them can defeat these protections. Network operators and hosting
-        infrastructure can still observe connection metadata. The service is not an anonymity
-        network.
+        The browser, delivered JavaScript, connection to the service, and running server must be
+        trustworthy. Compromising any of them can defeat these protections. Network operators and
+        hosting infrastructure can still observe connection metadata. The service is not an
+        anonymity network.
       </p>
       <p>
         Volatile storage also depends on deployment controls for swap, dumps, backups, and provider

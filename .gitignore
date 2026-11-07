@@ -7,6 +7,10 @@ server/target/
 *.log
 *.pem
 *.key
+erase-site.dat
+router.keys.dat
+ntcp2.keys
+ssu2.keys
 *.p12
 *.dump
 *.rdb

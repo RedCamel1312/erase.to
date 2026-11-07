@@ -55,6 +55,17 @@
     ]
   },
   {
+    "name": "@noble/hashes",
+    "version": "2.4.0",
+    "license": "MIT",
+    "homepage": "https://paulmillr.com/noble/",
+    "directory": "noble__hashes-2.4.0",
+    "notice_kind": "license-files",
+    "notice_files": [
+      "LICENSE"
+    ]
+  },
+  {
     "name": "@sveltejs/acorn-typescript",
     "version": "1.0.13",
     "license": "MIT",

@@ -130,6 +130,11 @@ jobs:
         run: |
           npm install --global "pnpm@$PNPM_VERSION"
           pnpm install --frozen-lockfile
+      - name: Check proxy admission on isolated listeners
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq nginx
+          python3 tests/proxy_admission.py
       - name: Validate Compose configuration
         run: docker compose config --quiet
       - name: Check network isolation and loopback-only publishing

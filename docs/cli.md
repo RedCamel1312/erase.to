@@ -119,6 +119,8 @@ The input may instead be a protected JSON file containing only `{ "id": "…", "
 
 The CLI accepts HTTPS origins and loopback HTTP origins for development. It rejects user information in URLs, remote plaintext HTTP, query strings, fragments in the service origin, and non-root service paths. Redirects are rejected. Capabilities are sent in JSON bodies, with credentials omitted and an explicit `Origin` header. Each request has a 330-second timeout and a bounded response reader. The server also applies its own request and connection deadlines; a size below 64 MiB is not a promise of completion on a slow connection.
 
+Every `.i2p` origin is also refused before DNS resolution. Use a browser with a trusted local I2P proxy for the [I2P service](i2p.md).
+
 Every `.onion` origin is rejected before a network request, including HTTPS onion URLs and fully qualified names ending in a dot. Use Tor Browser for the onion service. This CLI does not provide a Tor proxy transport; a hostname alone must not be mistaken for Tor routing.
 
 No consuming request is automatically retried. If a connection fails after the server consumes a retrieval, the last available copy may be gone even though no usable plaintext arrived. A create request can similarly succeed on the server while its response is lost; expiry still bounds that stored record. Treat the command's result as uncertain after an ambiguous transport failure rather than assuming no state changed.

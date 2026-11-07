@@ -64,7 +64,7 @@ Der Absender kann ein Paket widerrufen, solange eine Serverkopie vorhanden ist. 
 | Begrenzte Verfügbarkeit | Ablaufzeit und Abruflimit gelten gleichzeitig. Berechtigungsprüfung, Zähleränderung und endgültige Löschung erfolgen atomar über API-Prozesse hinweg, die dieselbe maßgebliche Valkey-Instanz nutzen. |
 | Kontrolle durch den Absender | Eine unabhängige Widerrufsberechtigung entfernt die verbleibende Serverkopie. Sie ist nicht im Link für den Empfänger enthalten. |
 | Lokales Leeren | Manuelles Leeren, eine Frist von fünf Minuten Inaktivität mit 30 Sekunden Vorwarnung und Leeren entschlüsselter Inhalte beim Verbergen des Tabs. |
-| Zugang und Betrieb | Browser- und Kommandozeilenclients, optionaler Tor-Onion-Zugang im Tor Browser und eigener Betrieb mit Rust, Svelte und Valkey ohne Persistenz. |
+| Zugang und Betrieb | Browser- und Kommandozeilenclients, Zugang über Tor Browser oder [einen lokalen I2P-Router](docs/i2p.md) und eigener Betrieb mit Rust, Svelte und Valkey ohne Persistenz. |
 
 ## Privatsphäre während einer Sitzung
 
@@ -139,7 +139,7 @@ pnpm cli help
 
 Die [Entwicklungsanleitung](docs/development.md) behandelt Rust, eine isolierte Valkey-Instanz und den Entwicklungsserver für den Browser. Die [Testanleitung](docs/testing.md) beschreibt Prüfungen mit echtem Cache, mehreren Prozessen und vollständigen Nutzungsabläufen. Tests dürfen niemals einen Produktionscache verwenden.
 
-Die [CLI-Anleitung](docs/cli.md) erklärt Senden, Empfangen, Passphraseneingabe und Widerruf. Vollständige Links, Nachrichtentexte und Passphrasen gehören nicht in Shell-Argumente oder die Historie. Die CLI unterstützt HTTPS und lokales HTTP zur Entwicklung; Onion-Adressen weist sie ab, weil sie keinen Tor-Transport besitzt. Verwende dafür Tor Browser. Empfangene Dateien werden nie automatisch geöffnet oder als Vorschau angezeigt.
+Die [CLI-Anleitung](docs/cli.md) erklärt Senden, Empfangen, Passphraseneingabe und Widerruf. Vollständige Links, Nachrichtentexte und Passphrasen gehören nicht in Shell-Argumente oder die Historie. Die CLI unterstützt HTTPS und lokales HTTP zur Entwicklung; Tor- und I2P-Adressen weist sie vor der Namensauflösung ab. Verwende Tor Browser oder einen Browser mit deinem lokalen I2P-Proxy. Empfangene Dateien werden nie automatisch geöffnet oder als Vorschau angezeigt.
 
 Die wichtigsten Quellverzeichnisse sind `web/` (Oberfläche), `shared/` (Protokoll und Kryptografie), `server/` (API und atomare Cache-Operationen), `cli/` und `deploy/`. Die CI prüft Anwendung, Verhalten mit echtem Cache und Produktionscontainer. Eine vollständige Übersicht bietet der [Dokumentationsindex](docs/README.md).
 

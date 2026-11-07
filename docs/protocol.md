@@ -35,7 +35,7 @@ https://erase.to/view#1.<id-base64url>.<S-base64url>
 
 The recipient captures the ID and secret in memory and immediately replaces the current URL/history entry with `/view` and a null history state. Both values are in the fragment, which the browser does not send in the initial HTTP request. API calls subsequently transmit the ID and the applicable derived capability over the configured transport. Replacing the current history entry does not remove the original URL from messengers, copied text, browser sync, screenshots, or other histories.
 
-`HKDF(IKM, salt, info)` below is RFC 5869 HKDF-SHA-256 with 32 output bytes. Text arguments are UTF-8. The current implementation uses WebCrypto HKDF and libsodium for Argon2id, XChaCha20-Poly1305 and SHA-256.
+`HKDF(IKM, salt, info)` below is RFC 5869 HKDF-SHA-256 with 32 output bytes. Text arguments are UTF-8. The browser and CLI normally use WebCrypto for HKDF. On the exact I2P origin configured at build time, browsers without SubtleCrypto use the same HKDF-SHA-256 from `@noble/hashes` inside the worker. Both paths require native secure randomness and produce the same keys and capabilities. Libsodium provides Argon2id, XChaCha20-Poly1305 and the protocol’s public SHA-256 hashes.
 
 ```text
 peek_token = HKDF(S,

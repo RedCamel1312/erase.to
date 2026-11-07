@@ -36,7 +36,7 @@ Share link: `/view#1.<id>.<master-secret-base64url>`. Receiver captures fragment
 
 ## HTTP
 
-All JSON is strict; all API responses no-store. API accepts only same configured Origin, with absent Origin allowed for CLI (Sec-Fetch-Site must be absent or same-origin; cross-site and same-site rejected). All client calls send Origin including CLI. Config supports comma-separated PUBLIC_ORIGINS for clearnet and onion. Host must match one configured origin. No proxy IP headers trusted or retained.
+All JSON is strict; all API responses no-store. API accepts only same configured Origin, with absent Origin allowed for CLI (Sec-Fetch-Site must be absent or same-origin; cross-site and same-site rejected). All client calls send Origin including CLI. Config supports comma-separated PUBLIC_ORIGINS for HTTPS, onion and I2P origins. Host must match one configured origin. No proxy IP headers trusted or retained.
 
 - GET `/api/config`: `{protocol:1,max_content_bytes:67108864,max_text_bytes:8388608,max_files:8,max_views:100,max_ttl:604800,pow_bits:18}`.
 - GET `/api/challenge`: `{challenge:string,bits:18,expires_at:number}` (Unix seconds).

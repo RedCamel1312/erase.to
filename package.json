@@ -1,6 +1,6 @@
 {
   "name": "erase-to",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.25.0",
@@ -17,6 +17,7 @@
     "format:check": "prettier --check \"*.{js,mjs,cjs,ts,json}\" \"cli/**/*.{js,mjs,cjs,ts,json}\" \"shared/**/*.{js,mjs,cjs,ts,json}\" \"web/**/*.{js,mjs,cjs,ts,json,svelte,css,html}\" \"tests/**/*.{js,mjs,cjs,ts,json}\""
   },
   "dependencies": {
+    "@noble/hashes": "2.4.0",
     "libsodium-wrappers-sumo": "0.8.4",
     "svelte": "5.57.3"
   },

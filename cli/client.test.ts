@@ -50,6 +50,21 @@ describe('CLI boundaries', () => {
       expect(() => serverOrigin(origin)).toThrow('Tor transport');
     }
   });
+  it('rejects I2P addresses before invoking the network transport', () => {
+    const fetch = vi.spyOn(globalThis, 'fetch');
+    for (const host of [
+      'example.i2p',
+      'example.i2p.',
+      'EXAMPLE.I2P..',
+      'a'.repeat(52) + '.b32.i2p',
+      'i2p.',
+    ]) {
+      for (const scheme of ['https', 'http']) {
+        expect(() => new Client(`${scheme}://${host}`)).toThrow('I2P transport');
+      }
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it('bounds a consuming request and never retries an ambiguous network failure', async () => {
     const timeout = vi.spyOn(AbortSignal, 'timeout');
     const fetch = vi

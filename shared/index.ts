@@ -1,5 +1,6 @@
 import sodium from 'libsodium-wrappers-sumo';
 import { pack, unpack } from './content';
+import { nativeHkdf, type HkdfSha256 } from './hkdf';
 import {
   encoder,
   encodeText,
@@ -49,33 +50,27 @@ function sameHex(left: string, right: string): boolean {
     sodium.memcmp(sodium.from_hex(left), sodium.from_hex(right))
   );
 }
-async function hkdf(material: Uint8Array, salt: string, info: string): Promise<Uint8Array> {
-  const copy = new Uint8Array(material);
-  try {
-    const key = await crypto.subtle.importKey('raw', copy, 'HKDF', false, ['deriveBits']);
-    return new Uint8Array(
-      await crypto.subtle.deriveBits(
-        { name: 'HKDF', hash: 'SHA-256', salt: encoder.encode(salt), info: encoder.encode(info) },
-        key,
-        256,
-      ),
-    );
-  } finally {
-    copy.fill(0);
-  }
-}
-async function peekBytes(secret: string, id: string): Promise<Uint8Array> {
+async function peekBytes(secret: string, id: string, hkdf: HkdfSha256): Promise<Uint8Array> {
   await sodium.ready;
   validateId(id);
   const master = fromBase64Url(secret, 32, 32);
   try {
-    return await hkdf(master, `erase.to/v1/peek:${id}`, 'erase.to/v1/peek');
+    return await hkdf(
+      master,
+      encoder.encode(`erase.to/v1/peek:${id}`),
+      encoder.encode('erase.to/v1/peek'),
+      32,
+    );
   } finally {
     master.fill(0);
   }
 }
-export async function derivePeek(secret: string, id: string): Promise<string> {
-  const peek = await peekBytes(secret, id);
+export async function derivePeek(
+  secret: string,
+  id: string,
+  hkdf: HkdfSha256 = nativeHkdf,
+): Promise<string> {
+  const peek = await peekBytes(secret, id, hkdf);
   try {
     return toBase64Url(peek);
   } finally {
@@ -86,6 +81,7 @@ async function contentKeys(
   secret: string,
   header: Header,
   passphrase: string,
+  hkdf: HkdfSha256,
 ): Promise<{ key: Uint8Array; read: Uint8Array }> {
   await sodium.ready;
   if (typeof passphrase !== 'string' || passphrase.length > MAX_PASSPHRASE_BYTES)
@@ -112,18 +108,16 @@ async function contentKeys(
     }
     material.set(master);
     material.set(passwordKey, 32);
+    const salt = encoder.encode(`erase.to/v1/content:${header.id}`);
     encryptionKey = await hkdf(
       material,
-      `erase.to/v1/content:${header.id}`,
-      `erase.to/v1/aead:${header.kdf}`,
+      salt,
+      encoder.encode(`erase.to/v1/aead:${header.kdf}`),
+      32,
     );
     return {
       key: encryptionKey,
-      read: await hkdf(
-        material,
-        `erase.to/v1/content:${header.id}`,
-        `erase.to/v1/read:${header.kdf}`,
-      ),
+      read: await hkdf(material, salt, encoder.encode(`erase.to/v1/read:${header.kdf}`), 32),
     };
   } catch (error) {
     encryptionKey?.fill(0);
@@ -135,7 +129,11 @@ async function contentKeys(
     material.fill(0);
   }
 }
-export async function create(input: ContentInput, options: CreateOptions): Promise<CreatedNote> {
+export async function create(
+  input: ContentInput,
+  options: CreateOptions,
+  hkdf: HkdfSha256 = nativeHkdf,
+): Promise<CreatedNote> {
   validatePolicy(options.ttl, options.views);
   const passphrase = options.passphrase ?? '';
   if (typeof passphrase !== 'string' || passphrase.length > MAX_PASSPHRASE_BYTES)
@@ -152,7 +150,7 @@ export async function create(input: ContentInput, options: CreateOptions): Promi
     revoke = sodium.randombytes_buf(32);
     const secret = toBase64Url(master);
     const id = toBase64Url(sodium.randombytes_buf(32));
-    peek = await peekBytes(secret, id);
+    peek = await peekBytes(secret, id, hkdf);
     const header: Header = {
       version: 1,
       id,
@@ -165,7 +163,7 @@ export async function create(input: ContentInput, options: CreateOptions): Promi
       salt: passphrase ? toBase64Url(sodium.randombytes_buf(16)) : '',
       nonce: toBase64Url(sodium.randombytes_buf(24)),
     };
-    ({ key, read } = await contentKeys(secret, header, passphrase));
+    ({ key, read } = await contentKeys(secret, header, passphrase, hkdf));
     header.read = hash(read);
     const headerBytes = serializeHeader(header);
     const ciphertext = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
@@ -201,20 +199,21 @@ export async function prepareOpen(
   secret: string,
   expectedId: string,
   passphrase = '',
+  hkdf: HkdfSha256 = nativeHkdf,
 ): Promise<PreparedOpen> {
   await sodium.ready;
   const headerBytes = fromBase64Url(headerBase64);
   const header = parseHeader(headerBytes);
   validateId(expectedId);
   if (header.id !== expectedId) invalid('The package belongs to another link.');
-  const peek = await peekBytes(secret, expectedId);
+  const peek = await peekBytes(secret, expectedId, hkdf);
   try {
     if (!sameHex(hash(peek), header.peek))
       throw new ProtocolError('invalid_link', 'The key does not match this note.');
   } finally {
     peek.fill(0);
   }
-  const { key, read } = await contentKeys(secret, header, passphrase);
+  const { key, read } = await contentKeys(secret, header, passphrase, hkdf);
   try {
     if (!sameHex(hash(read), header.read)) {
       key.fill(0);

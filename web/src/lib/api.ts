@@ -235,6 +235,8 @@ export type Api = typeof api;
 export function errorText(error: unknown): string {
   const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
   const messages: Record<string, string> = {
+    crypto_unavailable:
+      'Required browser cryptography is unavailable. Open the service through a supported address and browser.',
     unavailable:
       'Package unavailable. It may have expired, reached its retrieval limit, or been revoked.',
     wrong_passphrase: 'Incorrect passphrase. No retrieval has been used. Try again.',

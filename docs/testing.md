@@ -1,5 +1,7 @@
 # Testing and verification boundaries
 
+For the hosted build, release assets from 3.2.0 include `web-SHA256SUMS.txt`. This lists the uncompressed files the operator built, including the worker. To compare a local build, check out the release tag, install the pinned dependencies, and set `VITE_I2P_URL` and `VITE_ONION_URL` to the exact origins printed in the checksum file. Run `pnpm build` and then `sha256sum -c /path/to/web-SHA256SUMS.txt` inside `web/dist`. When comparing served bytes, fetch the root document at `/` and the other files at their listed paths with HTTP content encoding decoded. Matching bytes for one check do not establish how every visitor was served or how the backend is configured.
+
 The test suite separates cryptography, client lifecycle, HTTP/cache behavior and deployment checks. Passing one layer does not establish another. Use synthetic data and an isolated Valkey instance. Never run integration or fault-injection tests against a live message cache.
 
 Install the pinned dependencies and prepare the tools in [development](development.md). Test counts change as regressions are added; use the command output for the current count instead of treating a number in prose as a release certificate.
@@ -51,7 +53,7 @@ The cryptographic tests run with the installed libsodium dependency and WebCrypt
 
 ### CLI tests
 
-`cli/client.test.ts` checks allowed origins, rejection of unsupported onion transport, bounded file reads, unsafe output names, duplicate names, overwrite refusal and the generated text filename. A loopback HTTP allowance is for development; remote HTTP is rejected.
+`cli/client.test.ts` checks allowed origins, rejection of unsupported Tor and I2P transports, bounded file reads, unsafe output names, duplicate names, overwrite refusal and the generated text filename. A loopback HTTP allowance is for development; remote HTTP is rejected.
 
 ## Rust protocol tests without a cache
 
@@ -129,6 +131,8 @@ Use the Rust-served production build, synthetic files and a fresh browser contex
 6. Download a file only through the explicit action. Confirm that no preview or remote content loads and object URLs are revoked after use/clearing.
 7. Navigate with the keyboard, inspect focus/error feedback and test narrow screens. Verify System follows the browser color preference with a light fallback, explicit Light/Dark overrides survive navigation, and returning to System removes the stored override. Check early theme loading against the built production server, not only Vite.
 8. Check the real response CSP and worker behavior, including WebAssembly. Verify no third-party requests, service worker or persistent sensitive browser data.
+
+Run `python3 tests/proxy_admission.py` on Linux with nginx and OpenSSL installed. It creates private listeners and a synthetic upstream. Do not load-test public endpoints. For [I2P](i2p.md), check the full editor through a separate router identity, including a passphrase-protected transfer and rejection of a second open. A local HTTP health check alone does not establish that the I2P route or browser cryptography works.
 
 For an onion deployment, repeat the relevant checks in Tor Browser on the onion origin. An ordinary browser or a CLI that simply accepts an onion-looking string is not a Tor transport test. The current CLI rejects onion origins.
 

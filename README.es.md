@@ -64,7 +64,7 @@ El remitente puede revocar un paquete mientras quede una copia en el servidor. L
 | Disponibilidad limitada | La caducidad y el número de recuperaciones se aplican a la vez. La autorización, los cambios del contador y el borrado final son atómicos entre los procesos de API que comparten una instancia primaria de Valkey. |
 | Control del remitente | Una autorización independiente de revocación elimina la copia restante del servidor. No se incluye en el enlace del destinatario. |
 | Limpieza local | Borrado manual, un plazo de cinco minutos de inactividad con un aviso 30 segundos antes y borrado del contenido descifrado al ocultar la pestaña. |
-| Acceso y funcionamiento | Clientes web y de línea de comandos, acceso onion opcional mediante Tor Browser y alojamiento propio con Rust, Svelte y Valkey sin persistencia. |
+| Acceso y funcionamiento | Clientes web y de línea de comandos, acceso mediante Tor Browser o [un router I2P local](docs/i2p.md) y alojamiento propio con Rust, Svelte y Valkey sin persistencia. |
 
 ## Privacidad durante una sesión
 
@@ -139,7 +139,7 @@ pnpm cli help
 
 La [guía de desarrollo](docs/development.md) cubre Rust, una instancia aislada de Valkey y el servidor de desarrollo del navegador. La [guía de pruebas](docs/testing.md) explica las comprobaciones con caché real, varios procesos y flujos completos. Las pruebas nunca deben usar una caché de producción.
 
-La [guía de la CLI](docs/cli.md) explica el envío, la recepción, la entrada de frases de contraseña y la revocación. No pongas enlaces completos, mensajes ni frases de contraseña en los argumentos o el historial de la shell. La CLI admite HTTPS y HTTP local para desarrollo; rechaza direcciones onion porque no incorpora transporte Tor. Utiliza Tor Browser para acceder por onion. Los archivos recibidos nunca se abren ni se previsualizan automáticamente.
+La [guía de la CLI](docs/cli.md) explica el envío, la recepción, la entrada de frases de contraseña y la revocación. No pongas enlaces completos, mensajes ni frases de contraseña en los argumentos o el historial de la shell. La CLI admite HTTPS y HTTP local para desarrollo; rechaza las direcciones Tor e I2P antes de resolver el nombre. Utiliza Tor Browser o un navegador configurado con tu proxy I2P local. Los archivos recibidos nunca se abren ni se previsualizan automáticamente.
 
 Los directorios principales son `web/` (interfaz), `shared/` (protocolo y criptografía), `server/` (API y operaciones atómicas de caché), `cli/` y `deploy/`. La CI comprueba la aplicación, su comportamiento con caché real y el contenedor de producción. El [índice de documentación](docs/README.md) ofrece el mapa completo.
 

@@ -64,7 +64,7 @@ The sender can revoke a package while a server copy remains. Revocation cannot r
 | Limited availability | Expiry and retrieval count apply together. Authorization, count changes and final deletion are atomic across API processes sharing one Valkey primary. |
 | Sender control | An independent revocation capability removes the remaining server copy. It is not included in the recipient's link. |
 | Local cleanup | Manual clearing, a five-minute inactivity deadline with a 30-second warning, and clearing of decrypted content when the tab is hidden. |
-| Access and operation | Browser and CLI clients, optional Tor onion access in Tor Browser, and self-hosting with Rust, Svelte and non-persistent Valkey. |
+| Access and operation | Browser and CLI clients, Tor Browser or [a local I2P router](docs/i2p.md), and self-hosting with Rust, Svelte and non-persistent Valkey. |
 
 ## Privacy during a session
 
@@ -139,7 +139,7 @@ pnpm cli help
 
 The [development guide](docs/development.md) covers Rust, an isolated Valkey instance and the browser development server. The [testing guide](docs/testing.md) covers real-cache, multi-process and end-to-end checks. Tests must never use a production cache.
 
-The [CLI guide](docs/cli.md) explains sending, receiving, passphrase input and revocation. Keep full links, message text and passphrases out of shell arguments and history. The CLI supports HTTPS and local development HTTP; it rejects onion addresses because it has no Tor transport. Use Tor Browser for onion access. Received files are never automatically opened or previewed.
+The [CLI guide](docs/cli.md) explains sending, receiving, passphrase input and revocation. Keep full links, message text and passphrases out of shell arguments and history. The CLI supports HTTPS and local development HTTP; it refuses Tor and I2P destinations before making a request. For those addresses use Tor Browser or a browser configured with your local I2P proxy. Received files are never automatically opened or previewed.
 
 The main source directories are `web/` (interface), `shared/` (protocol and cryptography), `server/` (API and atomic cache operations), `cli/` and `deploy/`. CI checks the application, real-cache behavior and the production container. See the [documentation index](docs/README.md) for the full map.
 

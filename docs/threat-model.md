@@ -117,6 +117,12 @@ Configure the onion origin explicitly, keep requests on that origin, and serve t
 
 Browser support for secure-context features and performance of the KDF/proof must be tested in the intended Tor Browser configuration. An unsupported browser should receive a clear error rather than a weaker silent cryptographic fallback. A private network address, a self-signed certificate, an onion URL and HTTPS are different deployment choices; none justifies a blanket anonymity claim.
 
+## I2P access
+
+The [I2P service](i2p.md) serves the complete editor from a single destination. I rely on a trusted local I2P router to authenticate that destination and carry the traffic; the browser itself sees HTTP. A remote HTTP proxy, a public I2P gateway or a malicious local router can replace the application and read the fragment and plaintext. Use the full published B32 address with a local router. A matching hostname is not proof that a browser chose the correct proxy.
+
+The I2P route uses the same cache, expiry and atomic retrieval rules as HTTPS and Tor. It does not conceal that the operator also runs a public website, prevent timing correlation, or protect files after a recipient saves them. Neither the router nor a message recipient needs a separate account.
+
 ## Evidence and review scope
 
 The shared cryptographic tests include an upstream libsodium XChaCha20-Poly1305 known-answer vector, independently reproduced HKDF outputs, passphrase/secret separation, rejection before consumption, authenticated-header and ciphertext tampering, Unicode and binary round trips, maximum-size input, padding boundaries, canonical parsing, bounded file names and bit-based proof verification. These tests establish those specific checks for the exercised implementation and dependency versions.

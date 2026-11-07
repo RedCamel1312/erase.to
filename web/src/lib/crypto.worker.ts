@@ -10,6 +10,8 @@ import {
 import type { PreparedOpen, FileInput } from '../../../shared/index.ts';
 import type { WorkerMethods } from './worker.ts';
 import { MAX_FILES, MAX_CONTENT_BYTES } from '../../../shared/types.ts';
+import { workerHkdf } from './worker-hkdf.ts';
+import { i2pOrigin } from './site.ts';
 let link: { id: string; secret: string } | null = null;
 let headerBase64 = '';
 let prepared: PreparedOpen | null = null;
@@ -27,6 +29,7 @@ scope.onmessage = async ({
   }
   running = true;
   try {
+    const hkdf = workerHkdf(self.location.origin, i2pOrigin, self.isSecureContext, self.crypto);
     let result: unknown;
     let transfer: Transferable[] = [];
     switch (data.method) {
@@ -45,7 +48,7 @@ scope.onmessage = async ({
               mime: file.type || 'application/octet-stream',
               data: new Uint8Array(await file.arrayBuffer()),
             });
-          const sealed = await create({ text: input.text, files }, input.options);
+          const sealed = await create({ text: input.text, files }, input.options, hkdf);
           result = {
             packet: sealed.packet,
             id: sealed.id,
@@ -71,7 +74,7 @@ scope.onmessage = async ({
       }
       case 'load': {
         link = parseShareLink((data.input as WorkerMethods['load']['input']).url);
-        result = { id: link.id, peekToken: await derivePeek(link.secret, link.id) };
+        result = { id: link.id, peekToken: await derivePeek(link.secret, link.id, hkdf) };
         break;
       }
       case 'inspect': {
@@ -90,6 +93,7 @@ scope.onmessage = async ({
           link.secret,
           link.id,
           (data.input as WorkerMethods['prepare']['input']).passphrase,
+          hkdf,
         );
         result = { readToken: prepared.readToken };
         break;
