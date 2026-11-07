@@ -57,7 +57,7 @@ impl Config {
             1024,
             2 * 1024 * 1024 * 1024,
         )?;
-        config.max_in_flight = number("MAX_IN_FLIGHT", 2, 1, 256)? as usize;
+        config.max_in_flight = number("MAX_IN_FLIGHT", 2, 2, 256)? as usize;
         config.request_rate = number("REQUESTS_PER_SECOND", 100, 1, 100000)?;
         config.challenge_rate = number("CHALLENGES_PER_SECOND", 10, 1, 100000)?;
         config.create_rate = number("CREATES_PER_SECOND", 8, 1, 100000)?;

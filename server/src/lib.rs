@@ -30,6 +30,7 @@ use std::{
     pin::Pin,
     sync::Arc,
     task::{Context, Poll},
+    time::Duration,
 };
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 use tower_http::services::ServeDir;
@@ -37,13 +38,64 @@ use tower_http::services::ServeDir;
 #[derive(Clone)]
 struct AppState {
     store: Arc<Store>,
-    api_slots: Arc<Semaphore>,
+    public_controls: Arc<Semaphore>,
+    access_controls: Arc<Semaphore>,
+    uploads: Arc<Semaphore>,
+    packets: Arc<Semaphore>,
     static_slots: Arc<Semaphore>,
 }
 
+fn take_slot(slots: &Arc<Semaphore>) -> Result<OwnedSemaphorePermit, ApiError> {
+    slots
+        .clone()
+        .try_acquire_owned()
+        .map_err(|_| ApiError::Capacity)
+}
+
+impl AppState {
+    async fn public_admission(&self) -> Result<OwnedSemaphorePermit, ApiError> {
+        let permit = take_slot(&self.public_controls)?;
+        self.store
+            .rate("public", self.store.config.request_rate as f64 / 2.0)
+            .await?;
+        Ok(permit)
+    }
+
+    async fn access_capability(
+        &self,
+        request: Request,
+        id: &str,
+    ) -> Result<(String, OwnedSemaphorePermit), ApiError> {
+        if !valid_id(id) {
+            return Err(ApiError::Unavailable);
+        }
+        let permit = take_slot(&self.access_controls)?;
+        self.store
+            .rate("access", self.store.config.request_rate as f64 / 2.0)
+            .await?;
+        // A capability is at most 1 KiB and never needs a full upload deadline.
+        let raw = tokio::time::timeout(
+            Duration::from_secs(5),
+            body(request, "application/json", 1024),
+        )
+        .await
+        .map_err(|_| ApiError::RequestTimeout)??;
+        let value: Capability =
+            serde_json::from_slice(&raw).map_err(|_| ApiError::InvalidRequest)?;
+        Ok((token_hash(&value.token)?, permit))
+    }
+}
+
 pub async fn build_router(config: Config) -> Result<Router, ApiError> {
+    if config.max_in_flight < 2 {
+        return Err(ApiError::Capacity);
+    }
+    let control_slots = config.max_in_flight.max(8);
     let state = AppState {
-        api_slots: Arc::new(Semaphore::new(config.max_in_flight)),
+        public_controls: Arc::new(Semaphore::new(control_slots)),
+        access_controls: Arc::new(Semaphore::new(control_slots)),
+        uploads: Arc::new(Semaphore::new(config.max_in_flight - 1)),
+        packets: Arc::new(Semaphore::new(config.max_in_flight)),
         static_slots: Arc::new(Semaphore::new(32)),
         store: Store::new(config.clone()).await?,
     };
@@ -91,18 +143,13 @@ async fn guard(State(state): State<AppState>, request: Request, next: Next) -> R
         });
     let result: Result<Response, ApiError> = async {
         authorize(&state.store.config, &request)?;
-        let slots = if is_api {
-            state.api_slots.clone()
+        // Only recognized API handlers enter their class. A fallback, bad method
+        // or invalid ID cannot spend an existing recipient's request allowance.
+        let static_permit = if is_api {
+            None
         } else {
-            state.static_slots.clone()
+            Some(take_slot(&state.static_slots)?)
         };
-        let permit = slots.try_acquire_owned().map_err(|_| ApiError::Capacity)?;
-        if is_api {
-            state
-                .store
-                .rate("request", state.store.config.request_rate)
-                .await?;
-        }
         let mut response =
             tokio::time::timeout(state.store.config.request_timeout, next.run(request))
                 .await
@@ -110,12 +157,10 @@ async fn guard(State(state): State<AppState>, request: Request, next: Next) -> R
         if response.status() == StatusCode::METHOD_NOT_ALLOWED {
             response = ApiError::InvalidRequest.into_response();
         }
-        Ok(response.map(|body| {
-            Body::new(HeldBody {
-                body,
-                _permit: Arc::new(permit),
-            })
-        }))
+        Ok(match static_permit {
+            Some(permit) => hold_response(response, permit),
+            None => response,
+        })
     }
     .await;
     let mut response = result.unwrap_or_else(IntoResponse::into_response);
@@ -180,6 +225,12 @@ fn authorize(config: &Config, request: &Request) -> Result<(), ApiError> {
         }
     }
     if path.starts_with("/api/") {
+        if path.contains('%') {
+            return Err(ApiError::NotFound);
+        }
+        if request.method() == axum::http::Method::HEAD {
+            return Err(ApiError::InvalidRequest);
+        }
         if let Some(origin) = one_header(request.headers(), "origin")?
             && !config.origins.iter().any(|allowed| allowed == origin)
         {
@@ -249,31 +300,25 @@ struct Capability {
     token: String,
 }
 
-async fn capability(request: Request, id: &str) -> Result<String, ApiError> {
-    if !valid_id(id) {
-        return Err(ApiError::Unavailable);
-    }
-    let raw = body(request, "application/json", 1024).await?;
-    let value: Capability = serde_json::from_slice(&raw).map_err(|_| ApiError::InvalidRequest)?;
-    token_hash(&value.token)
-}
-
-async fn public_config(State(state): State<AppState>) -> Json<serde_json::Value> {
-    Json(
+async fn public_config(State(state): State<AppState>) -> Result<Json<serde_json::Value>, ApiError> {
+    let _control = state.public_admission().await?;
+    Ok(Json(
         serde_json::json!({ "protocol": 1, "max_content_bytes": MAX_CONTENT_BYTES, "max_text_bytes": MAX_TEXT_BYTES,
         "max_files": 8, "max_views": 100, "max_ttl": 604800, "pow_bits": state.store.config.pow_bits }),
-    )
+    ))
 }
 async fn challenge(State(state): State<AppState>) -> Result<Json<store::Challenge>, ApiError> {
+    let _control = state.public_admission().await?;
     Ok(Json(state.store.issue().await?))
 }
 async fn create_note(
     State(state): State<AppState>,
     request: Request,
 ) -> Result<impl IntoResponse, ApiError> {
+    let control = state.public_admission().await?;
     state
         .store
-        .rate("create", state.store.config.create_rate)
+        .rate("create", state.store.config.create_rate as f64)
         .await?;
     let challenge = one_header(request.headers(), "x-erase-challenge")?
         .ok_or(ApiError::ProofInvalid)?
@@ -286,6 +331,9 @@ async fn create_note(
     }
     // Reject unknown/replayed challenges before accepting a multi-megabyte request body.
     let bits = state.store.inspect_proof(&challenge).await?;
+    let _upload = take_slot(&state.uploads)?;
+    let _packet = take_slot(&state.packets)?;
+    drop(control);
     let bytes = body(request, "application/octet-stream", MAX_PACKET_BYTES).await?;
     let packet = parse_packet(bytes)?;
     if !verify_work(&challenge, &nonce, &packet.bytes, bits) {
@@ -299,7 +347,7 @@ async fn metadata(
     Path(id): Path<String>,
     request: Request,
 ) -> Result<Json<store::Metadata>, ApiError> {
-    let hash = capability(request, &id).await?;
+    let (hash, _control) = state.access_capability(request, &id).await?;
     Ok(Json(state.store.metadata(&id, &hash).await?))
 }
 async fn open_note(
@@ -307,16 +355,22 @@ async fn open_note(
     Path(id): Path<String>,
     request: Request,
 ) -> Result<Response, ApiError> {
-    let hash = capability(request, &id).await?;
+    let (hash, control) = state.access_capability(request, &id).await?;
+    state.store.check_open(&id, &hash).await?;
+    let permit = take_slot(&state.packets)?;
+    drop(control);
+    // The consuming operation rechecks the capability, expiry and count. A
+    // competing open/revocation between the two commands cannot bypass it.
     let packet = state.store.open(&id, &hash).await?;
-    Ok(([(header::CONTENT_TYPE, "application/octet-stream")], packet).into_response())
+    let response = ([(header::CONTENT_TYPE, "application/octet-stream")], packet).into_response();
+    Ok(hold_response(response, permit))
 }
 async fn delete_note(
     State(state): State<AppState>,
     Path(id): Path<String>,
     request: Request,
 ) -> Result<StatusCode, ApiError> {
-    let hash = capability(request, &id).await?;
+    let (hash, _control) = state.access_capability(request, &id).await?;
     state.store.delete(&id, &hash).await?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -359,6 +413,15 @@ async fn security_contact() -> impl IntoResponse {
         [(header::CONTENT_TYPE, "text/plain; charset=utf-8")],
         "Contact: https://github.com/RedCamel1312/erase.to/security/policy\nExpires: 2027-11-04T00:00:00Z\nPreferred-Languages: en, de\nCanonical: https://erase.to/.well-known/security.txt\n",
     )
+}
+
+fn hold_response(response: Response, permit: OwnedSemaphorePermit) -> Response {
+    response.map(|body| {
+        Body::new(HeldBody {
+            body,
+            _permit: Arc::new(permit),
+        })
+    })
 }
 
 struct HeldBody {

@@ -101,7 +101,7 @@ impl Store {
         ]
     }
 
-    pub async fn rate(&self, bucket: &str, per_second: u64) -> Result<(), ApiError> {
+    pub async fn rate(&self, bucket: &str, per_second: f64) -> Result<(), ApiError> {
         let mut command = self.eval(&RATE, &[self.key(&format!("rate:{bucket}"))]);
         command.arg(per_second);
         let allowed: i64 = self.cache.command(command).await?;
@@ -113,7 +113,8 @@ impl Store {
     }
 
     pub async fn issue(&self) -> Result<Challenge, ApiError> {
-        self.rate("challenge", self.config.challenge_rate).await?;
+        self.rate("challenge", self.config.challenge_rate as f64)
+            .await?;
         let challenge = random_token()?;
         let mut command = self.eval(
             &ISSUE,
@@ -211,6 +212,10 @@ impl Store {
             expires_at: number(&reply, 2)?,
             remaining: number(&reply, 3)?,
         })
+    }
+    pub async fn check_open(&self, id: &str, hash: &str) -> Result<(), ApiError> {
+        self.access(id, hash, "check_open").await?;
+        Ok(())
     }
     pub async fn open(&self, id: &str, hash: &str) -> Result<Vec<u8>, ApiError> {
         let mut reply = self.access(id, hash, "open").await?;

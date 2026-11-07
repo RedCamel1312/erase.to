@@ -15,3 +15,9 @@ The current main branch is maintained. Earlier PHP and Node.js implementations u
 CI audits the complete JavaScript dependency tree, including development and build tools, at the Low threshold. Rust dependencies are checked against RustSec. No advisory exclusions or ignored severity levels are configured.
 
 The build uses an exact, consumer-scoped dependency replacement documented in the [development guide](docs/development.md#build-dependency-replacement). Tests load the dependency resolved by the actual Svelte plugin and verify its package identity, configuration behavior and prototype handling. A clean scanner result describes known advisories at the time of the check; it is not a security certification.
+
+## External testing
+
+In November 2026 I received an anonymous black-box report about the public HTTPS service. During bursts of challenge requests, some otherwise valid requests to open a note received HTTP 429. Version 3.2.0 separates those budgets at the proxy and API. Regression tests cover both layers. This was a finding about availability; the report did not demonstrate an extra retrieval or a disclosure of plaintext.
+
+The tester examined the public endpoint and the JavaScript it served. The report did not tie that deployment to a particular Git commit or inspect the host. It is not a certification or a full source or infrastructure audit.

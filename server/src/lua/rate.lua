@@ -1,4 +1,4 @@
--- Only three fixed, short-lived buckets exist. No network identity is used.
+-- Fixed, short-lived public, access, challenge and create buckets. No network identity is used.
 local time = redis.call('TIME')
 local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
 local rate = tonumber(ARGV[1])

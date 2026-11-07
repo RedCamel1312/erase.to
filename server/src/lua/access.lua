@@ -7,13 +7,15 @@ if expires <= now_seconds() then
     return {'unavailable'}
 end
 local operation = ARGV[3]
-local capability = operation == 'meta' and 'peek' or (operation == 'open' and 'read' or 'revoke')
+local capability = ({meta='peek', check_open='read', open='read', delete='revoke'})[operation]
+if not capability then return {'capacity'} end
 if not constant_equal(redis.call('HGET', KEYS[1], capability), ARGV[2]) then return {'unavailable'} end
 local remaining = tonumber(redis.call('HGET', KEYS[1], 'remaining') or '0')
 if remaining < 1 then
     release_note(KEYS[1], ARGV[1], KEYS[2], KEYS[3], KEYS[4])
     return {'unavailable'}
 end
+if operation == 'check_open' then return {'ok'} end
 if operation == 'meta' then
     local header = redis.call('HGET', KEYS[1], 'header')
     if not header then return {'unavailable'} end

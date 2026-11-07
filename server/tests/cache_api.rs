@@ -165,7 +165,10 @@ impl TestApp {
         (challenge, nonce.to_string())
     }
     async fn upload(&self, note: &Note, proof: &(String, String)) -> Response {
-        self.request(0, reqwest::Method::POST, "/api/notes")
+        self.upload_to(0, note, proof).await
+    }
+    async fn upload_to(&self, instance: usize, note: &Note, proof: &(String, String)) -> Response {
+        self.request(instance, reqwest::Method::POST, "/api/notes")
             .header("Content-Type", "application/octet-stream")
             .header("X-Erase-Challenge", &proof.0)
             .header("X-Erase-Nonce", &proof.1)
@@ -273,7 +276,7 @@ async fn two_parallel_full_size_packets_survive_upload_and_consuming_delivery() 
         tokio::join!(app.proof(&first.packet), app.proof(&second.packet));
     let (first_created, second_created) = tokio::join!(
         app.upload(&first, &first_proof),
-        app.upload(&second, &second_proof)
+        app.upload_to(1, &second, &second_proof)
     );
     if first_created.status() != StatusCode::CREATED
         || second_created.status() != StatusCode::CREATED
@@ -297,6 +300,8 @@ async fn two_parallel_full_size_packets_survive_upload_and_consuming_delivery() 
     app.create(&third).await;
     let third_id = third.header.id.clone();
     let third_revoke = third.revoke.clone();
+    let third_read = third.read.clone();
+    let third_peek = third.peek.clone();
     drop(third);
     let fourth = full_size_note();
     let fourth_proof = app.proof(&fourth.packet).await;
@@ -304,14 +309,40 @@ async fn two_parallel_full_size_packets_survive_upload_and_consuming_delivery() 
         app.upload(&fourth, &fourth_proof).await.status(),
         StatusCode::SERVICE_UNAVAILABLE
     );
-    async fn read(app: &TestApp, note: &Note) {
-        let response = app.access(0, &note.header.id, "/open", &note.read).await;
+    let (first_read, second_read) = tokio::join!(
+        app.access(0, &first.header.id, "/open", &first.read),
+        app.access(0, &second.header.id, "/open", &second.read)
+    );
+    // Both full-size responses have sent headers. Their slow readers retain
+    // both packet slots. Bad tokens still fail authorization before admission.
+    assert_eq!(
+        app.access(0, &third_id, "/open", &first.read)
+            .await
+            .status(),
+        StatusCode::NOT_FOUND
+    );
+    // The third note has only one view. Denying its authorized open for
+    // capacity must leave that view available for later.
+    assert_eq!(
+        app.access(0, &third_id, "/open", &third_read)
+            .await
+            .status(),
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    let metadata: Value = app
+        .access(0, &third_id, "/meta", &third_peek)
+        .await
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(metadata["remaining"], 1);
+    async fn read(response: Response, note: &Note) {
         assert_eq!(response.status(), StatusCode::OK);
         let delivered = response.bytes().await.unwrap();
         assert_eq!(delivered.len(), note.packet.len());
         assert_eq!(digest(&delivered), digest(&note.packet));
     }
-    tokio::join!(read(&app, &first), read(&app, &second));
+    tokio::join!(read(first_read, &first), read(second_read, &second));
     for note in [&first, &second] {
         assert_eq!(
             app.access(1, &note.header.id, "/open", &note.read)
@@ -678,6 +709,146 @@ async fn challenge_cap_expiry_rate_limit_and_payload_binding_are_enforced() {
         StatusCode::OK
     );
     app.clear_namespace().await;
+    app.finish().await;
+}
+
+#[tokio::test]
+async fn challenge_flood_and_unknown_routes_leave_an_independent_access_budget() {
+    let mut app = TestApp::new(|config| config.request_rate = 4).await;
+    let note = Note::new(1);
+    app.create(&note).await;
+    let mut public_limited = false;
+    for i in 0..12 {
+        let status = app
+            .request(i % 2, reqwest::Method::GET, "/api/challenge")
+            .send()
+            .await
+            .unwrap()
+            .status();
+        if status == StatusCode::TOO_MANY_REQUESTS {
+            public_limited = true;
+            break;
+        }
+        assert_eq!(status, StatusCode::OK);
+    }
+    assert!(public_limited);
+    for (method, path, status) in [
+        (
+            reqwest::Method::POST,
+            "/api/notes/invalid/open".to_owned(),
+            StatusCode::NOT_FOUND,
+        ),
+        (
+            reqwest::Method::GET,
+            format!("/api/notes/{}/open", note.header.id),
+            StatusCode::BAD_REQUEST,
+        ),
+        (
+            reqwest::Method::POST,
+            format!("/api/notes/{}/other", note.header.id),
+            StatusCode::NOT_FOUND,
+        ),
+        (
+            reqwest::Method::HEAD,
+            "/api/challenge".to_owned(),
+            StatusCode::BAD_REQUEST,
+        ),
+    ] {
+        assert_eq!(
+            app.request(0, method, &path).send().await.unwrap().status(),
+            status
+        );
+    }
+    let touched: i64 = redis::cmd("EXISTS")
+        .arg(format!("{}rate:access", app.config.prefix))
+        .query_async(&mut app.admin)
+        .await
+        .unwrap();
+    assert_eq!(touched, 0);
+    assert_eq!(
+        app.access(1, &note.header.id, "/meta", &note.peek)
+            .await
+            .status(),
+        StatusCode::OK
+    );
+    assert_eq!(
+        app.access(0, &note.header.id, "/open", &note.read)
+            .await
+            .bytes()
+            .await
+            .unwrap()
+            .as_ref(),
+        note.packet
+    );
+    // Correctly shaped requests with invalid capabilities are rate-limited
+    // across instances, including when they target random, nonexistent notes.
+    let mut access_limited = false;
+    for i in 0..12 {
+        let status = app
+            .access(i % 2, &random_token().unwrap(), "/meta", &note.peek)
+            .await
+            .status();
+        if status == StatusCode::TOO_MANY_REQUESTS {
+            access_limited = true;
+            break;
+        }
+        assert_eq!(status, StatusCode::NOT_FOUND);
+    }
+    assert!(access_limited);
+    app.finish().await;
+}
+
+#[tokio::test]
+async fn a_stalled_upload_cannot_spend_the_recipient_packet_reserve() {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    let app = TestApp::new(|config| config.max_in_flight = 2).await;
+    let existing = Note::new(1);
+    app.create(&existing).await;
+    let pending = Note::new(1);
+    let proof = app.proof(&pending.packet).await;
+    let mut socket = tokio::net::TcpStream::connect(app.urls[0].trim_start_matches("http://"))
+        .await
+        .unwrap();
+    let headers = format!(
+        "POST /api/notes HTTP/1.1\r\nHost: erase.test\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\nX-Erase-Challenge: {}\r\nX-Erase-Nonce: {}\r\nExpect: 100-continue\r\nConnection: close\r\n\r\n",
+        pending.packet.len(),
+        proof.0,
+        proof.1,
+    );
+    socket.write_all(headers.as_bytes()).await.unwrap();
+    // Hyper emits 100 Continue when the handler starts polling the body. At
+    // that point the upload owns both its upload slot and a shared packet slot.
+    let mut ack = [0; b"HTTP/1.1 100 Continue\r\n\r\n".len()];
+    tokio::time::timeout(Duration::from_secs(5), socket.read_exact(&mut ack))
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(&ack, b"HTTP/1.1 100 Continue\r\n\r\n");
+    assert_eq!(
+        app.upload(&pending, &proof).await.status(),
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    assert_eq!(
+        app.access(0, &existing.header.id, "/meta", &existing.peek)
+            .await
+            .status(),
+        StatusCode::OK
+    );
+    let response = app
+        .access(0, &existing.header.id, "/open", &existing.read)
+        .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.bytes().await.unwrap().as_ref(), existing.packet);
+    assert_eq!(
+        app.access(1, &existing.header.id, "/open", &existing.read)
+            .await
+            .status(),
+        StatusCode::NOT_FOUND
+    );
+    socket.write_all(&pending.packet).await.unwrap();
+    let mut response = Vec::new();
+    socket.read_to_end(&mut response).await.unwrap();
+    assert!(response.starts_with(b"HTTP/1.1 201 "));
     app.finish().await;
 }
 
