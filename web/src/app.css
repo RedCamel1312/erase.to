@@ -591,7 +591,10 @@ select {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
-.file-drop > label {
+.file-picker {
+  display: contents;
+}
+.file-picker label {
   font-size: 0.76rem;
   color: var(--ink);
 }
@@ -690,8 +693,8 @@ input[type='file']::file-selector-button {
   letter-spacing: -0.025em;
   margin: 0;
 }
-.share-link {
-  font-size: 0.73rem !important;
+input.share-link {
+  font-size: 0.73rem;
 }
 .copy-link-button {
   width: 100%;
@@ -898,75 +901,135 @@ input[type='file']::file-selector-button {
 }
 @media (max-width: 520px) {
   .site-shell {
-    width: calc(100% - 28px);
+    width: calc(100% - 24px);
   }
   .site-header {
-    min-height: 76px;
-    gap: 1rem;
+    min-height: 64px;
+    gap: 8px;
   }
-  .brand {
+  .site-header .brand {
     font-size: 1.45rem;
   }
   .site-header nav {
-    gap: 13px;
+    gap: 10px;
   }
   .site-header nav a {
-    font-size: 0.68rem;
+    font-size: 0.8rem;
   }
   .site-header nav a[href='/'],
   .site-header nav a[href='/about'] {
     display: none;
   }
   .theme-button {
-    gap: 6px;
-    min-width: 81px;
-    padding: 6px 8px;
-    font-size: 0.69rem;
+    min-width: 86px;
+    font-size: 0.8rem;
   }
   .compose-head {
-    padding: 0 16px;
-    min-height: 49px;
+    padding: 0 8px;
+    min-height: 48px;
+  }
+  .mode-control {
+    gap: 4px;
+  }
+  .mode-control button,
+  .clear-button {
+    justify-content: center;
+    min-width: 44px;
+    padding-inline: 10px;
+    font-size: 0.85rem;
   }
   .content-editor textarea {
-    min-height: 265px;
-    padding: 18px 17px;
-    font-size: 0.82rem;
+    min-height: clamp(10rem, 31svh, 18rem);
+    padding: 16px;
+    line-height: 1.65;
+  }
+  .content-editor textarea.compact {
+    min-height: 6rem;
   }
   .editor-foot {
-    padding: 7px 16px;
-    font-size: 0.57rem;
+    flex-wrap: wrap;
+    padding: 6px 14px;
+    font-size: 0.7rem;
     gap: 6px;
   }
+  #size-counter {
+    margin-left: auto;
+  }
   .delivery-settings {
-    padding: 14px 16px 16px;
+    padding: 12px 14px 14px;
   }
   .settings-row {
-    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
-  .field > label {
-    font-size: 0.68rem;
+  .field > label,
+  .field-label {
+    font-size: 0.8rem;
   }
-  .settings-hint {
-    font-size: 0.6rem;
-    max-width: 46ch;
+  .settings-hint,
+  .hint,
+  .file-drop .hint,
+  .passphrase-content .hint,
+  .operation-status,
+  .session-warning,
+  .receipt-help,
+  .security-note p {
+    font-size: 0.75rem;
     line-height: 1.55;
   }
+  .passphrase-options {
+    margin: 10px 0 6px;
+  }
   .passphrase-options summary {
-    font-size: 0.68rem;
+    padding-block: 8px;
+    font-size: 0.82rem;
+  }
+  .optional {
+    font-size: 0.72rem;
+  }
+  .passphrase-content {
+    padding: 0 0 10px;
+  }
+  .button,
+  .text-button {
+    font-size: 0.85rem;
+  }
+  .button {
+    white-space: normal;
+  }
+  .button,
+  .text-button,
+  .theme-button,
+  .clear-button,
+  .passphrase-options summary,
+  .site-header .brand,
+  .site-footer .brand,
+  input:not([type='file']),
+  select {
+    min-height: 44px;
+  }
+  .site-header nav a,
+  .site-footer nav a,
+  .local-session a,
+  a.text-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .remove-file {
+    flex: 0 0 44px;
+    height: 44px;
   }
   .local-session {
-    font-size: 0.58rem;
-    gap: 5px;
+    font-size: 0.72rem;
+    gap: 0 6px;
     flex-wrap: wrap;
   }
-  .local-session a {
-    font-size: 0.58rem;
-  }
   .site-footer {
-    margin-top: 21px;
-    padding-top: 15px;
+    margin-top: 16px;
+    padding: 8px 0 max(16px, env(safe-area-inset-bottom));
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
   }
   .site-footer > div {
     display: flex;
@@ -976,16 +1039,16 @@ input[type='file']::file-selector-button {
   }
   .site-footer p {
     margin: 0;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
   }
   .site-footer nav {
-    gap: 10px 16px;
+    gap: 0 16px;
   }
   .site-footer nav a {
-    font-size: 0.63rem;
+    font-size: 0.78rem;
   }
   .receipt {
-    padding: 20px 18px 17px;
+    padding: 18px 16px;
   }
   .receipt-heading h2 {
     font-size: 1rem;
@@ -994,20 +1057,49 @@ input[type='file']::file-selector-button {
     grid-template-columns: 1.3fr 1fr;
     gap: 12px;
   }
-  .receipt-facts dd {
-    font-size: 0.7rem;
-  }
-  .revoke-row {
-    font-size: 0.61rem;
+  .revoke-row,
+  .meta-label,
+  .receipt-facts dt {
+    font-size: 0.75rem;
   }
   .file-area {
-    padding: 15px 16px;
+    padding: 14px;
   }
   .file-drop {
-    padding: 18px 12px;
+    padding: 14px 10px;
   }
-  .file-drop > label {
-    font-size: 0.7rem;
+  .file-picker {
+    display: grid;
+    position: relative;
+  }
+  .file-picker label {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 8px 20px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 550;
+  }
+  .file-picker .drop-prompt {
+    display: none;
+  }
+  .file-picker input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .file-picker:focus-within label {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .file-picker:has(input:disabled) label {
+    opacity: 0.5;
   }
   .open-panel {
     padding: 19px;
@@ -1019,7 +1111,7 @@ input[type='file']::file-selector-button {
     font-size: 1.65rem;
   }
   .document-page section p {
-    font-size: 0.83rem;
+    font-size: 0.92rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1140,7 +1232,7 @@ input[type='file']::file-selector-button {
   .file-drop {
     padding: 24px 18px;
   }
-  .file-drop > label {
+  .file-picker label {
     font-size: 0.82rem;
   }
   .file-drop input {
@@ -1201,8 +1293,11 @@ input[type='file']::file-selector-button {
   color: var(--muted);
   background: var(--surface);
 }
-@media (max-width: 380px) {
-  .site-header nav a[href='/privacy'] {
-    display: none;
+@media (max-width: 520px), (pointer: coarse) {
+  .content-editor textarea,
+  .content-editor textarea.compact,
+  input:not([type='file']),
+  select {
+    font-size: max(16px, 1rem);
   }
 }

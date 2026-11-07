@@ -148,16 +148,20 @@
               ondragleave={() => (dragging = false)}
               ondrop={dropFiles}
             >
-              <Icon name="file" size={24} /><label for="files"
-                >Drop files here or choose from your device</label
-              ><input
-                id="files"
-                type="file"
-                multiple
-                aria-describedby="file-limits"
-                disabled={model.busy}
-                onchange={selectFiles}
-              />
+              <Icon name="file" size={24} />
+              <div class="file-picker">
+                <label for="files"
+                  >Choose files<span class="drop-prompt"> or drop them here</span></label
+                >
+                <input
+                  id="files"
+                  type="file"
+                  multiple
+                  aria-describedby="file-limits"
+                  disabled={model.busy}
+                  onchange={selectFiles}
+                />
+              </div>
               <p class="hint" id="file-limits">
                 Up to {limits.max_files} files · {sizeLabel(limits.max_content_bytes)} for files and message
                 combined<br />Large packages need sufficient device memory and a stable connection.
