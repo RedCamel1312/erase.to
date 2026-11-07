@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.0 — 2026-11-07
+
+- Add an I2P destination for text and files.
+- Keep retrieval capacity available when challenge or upload traffic is busy.
+- Fit the editor to smaller screens and enlarge touch targets.
+
 ## 3.1.1 — 2026-11-04
 
 - Restore the theme button: System, Light and Dark.
@@ -22,4 +28,4 @@
 - Enforce expiry and retrieval limits atomically; add sender revocation.
 - Add proof of work, local session cleanup, a CLI and optional Tor access.
 
-Version 3.0.0 introduces a new protocol and cannot open links from the earlier PHP or Node.js implementations. Versions 3.1.0 and 3.1.1 retain that protocol. Updating the application does not require restarting the message cache.
+Version 3.0.0 introduces a new protocol and cannot open links from the earlier PHP or Node.js implementations. Versions 3.1 and 3.2 retain that protocol. Updating the application does not require restarting the message cache.
