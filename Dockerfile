@@ -12,7 +12,7 @@ ARG VITE_I2P_URL=""
 ENV VITE_I2P_URL=$VITE_I2P_URL
 RUN pnpm build
 
-FROM rust:1.99.1-bookworm@sha256:c9155318d07341301a78b45ecdd81af2e43b8b297d64e8fd4c5e80d7735607c3 AS server
+FROM rust:1.100.0-bookworm@sha256:ade39a710ef85f3506cffcfec3e8a24ba090badef1dff2fb798f71d878833fea AS server
 WORKDIR /source/server
 COPY server ./
 RUN cargo build --release --locked
